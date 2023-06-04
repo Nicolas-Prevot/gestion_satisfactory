@@ -1,9 +1,9 @@
 
 # STUFF THAT SHOULD NOT ENCUMBER REPO
-./static/
-./configs/
-./help/
-./pg_data/
+static/
+configs/
+help/
+pg_data/
 
 # PERSONNAL SETTINGS
 .idea/
