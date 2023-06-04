@@ -4,6 +4,7 @@ static/
 configs/
 help/
 pg_data/
+docker-compose.yaml
 
 # PERSONNAL SETTINGS
 .idea/
