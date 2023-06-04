@@ -1,0 +1,23 @@
+
+# STUFF THAT SHOULD NOT ENCUMBER REPO
+./static/
+./configs/
+./help/
+./pg_data/
+
+# PERSONNAL SETTINGS
+.idea/
+.vscode/
+*.code-workspace
+.python-version
+.virtual_documents/
+.directory
+env
+.env
+
+# TEMPORARY FILES
+__pycache__/
+*.pyc
+*.dat
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
