@@ -1,10 +1,13 @@
 import streamlit as st
-import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode,GridUpdateMode
+from streamlit_agraph import agraph
+
+import pandas as pd
 import base64
 
 import connect_bdd
-from utils.recipes_search import get_recipes
+from utils.recipes_search import get_recipes, get_rec_recipes
+from utils.graph import create_genealogy_graph
 
 # streamlit run .\streamlit.py --server.enableStaticServing true --server.port 1885
 
@@ -35,6 +38,10 @@ def main():
     df_items["streamlit_path_img"] = new_path
     df_items["web_img"] = new_path_web
 
+    item_to_img = {}
+    for i,row in df_items.iterrows():
+        item_to_img[row["name"]] = row["web_img"]
+
     # st.write(df_items)
 
     # st.title("items")
@@ -59,9 +66,9 @@ def main():
     st.title("recipes")
     st.write(df_recipes)
 
-    st.selectbox(   label="Get an item recipes",
-                    options=df_items["name"],
-                    index=0)
+    # st.selectbox(   label="Get an item recipes",
+    #                 options=df_items["name"],
+    #                 index=0)
 
     thumbnail_renderer = JsCode("""
         class ThumbnailRenderer {
@@ -101,50 +108,61 @@ def main():
                         reload_data=False,
                         #try_to_convert_back_to_original_types=False
                         )
-    
+
     with col2:
-        if len(response["selected_rows"]) == 1:
-            item_name = response["selected_rows"][0]["name"]
-            rows = get_recipes(item_name, df_recipes)
 
-            # Définir le style CSS pour le conteneur
-            container_style = """
-                display: flex;
-                align-items: center;
-            """
-            # Définir le style CSS pour les items sortants
-            out_item_style = """
-                margin: 20px;
-            """
-            # Définir le style CSS pour les items entrants
-            in_item_style = """
-                margin: 20px;
-            """
-            for index, row in rows.iterrows():
+        tab1, tab2 = st.tabs(["Recipe", "Genealogy"])
 
-                out_items = f''
-                for i in range(1,3):
-                    item = row[f"item_out_{i}"]
-                    if item is None:
-                        break
-                    src_img = df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]
+        with tab1:
+            if len(response["selected_rows"]) == 1:
+                item_name = response["selected_rows"][0]["name"]
+                rows = get_recipes(item_name, df_recipes)
 
-                    rate = row[f"rate_out_{i}"]
-                    out_items += f'{rate} <figure class="image" style="{out_item_style}"><img src="{src_img}" width=50px><figcaption style="font-size: 12px;">{item}</figcaption></figure>'
-                
-                in_items = ""
-                for i in range(1,5):
-                    item = row[f"item_in_{i}"]
-                    if item is None:
-                        break
-                    src_img = df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]
+                # Définir le style CSS pour le conteneur
+                container_style = """
+                    display: flex;
+                    align-items: center;
+                """
+                # Définir le style CSS pour les items sortants
+                out_item_style = """
+                    margin: 20px;
+                """
+                # Définir le style CSS pour les items entrants
+                in_item_style = """
+                    margin: 20px;
+                """
+                for index, row in rows.iterrows():
+
+                    out_items = f''
+                    for i in range(1,3):
+                        item = row[f"item_out_{i}"]
+                        if item is None:
+                            break
+                        src_img = df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]
+
+                        rate = row[f"rate_out_{i}"]
+                        out_items += f'{rate} <figure class="image" style="{out_item_style}"><img src="{src_img}" width=50px><figcaption style="font-size: 12px;">{item}</figcaption></figure>'
                     
-                    rate = row[f"rate_in_{i}"]
-                    in_items += f'{rate} <figure class="image" style="{in_item_style}"><img src="{src_img}" width=50px><figcaption style="font-size: 12px;">{item}</figcaption></figure>'
+                    in_items = ""
+                    for i in range(1,5):
+                        item = row[f"item_in_{i}"]
+                        if item is None:
+                            break
+                        src_img = df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]
+                        
+                        rate = row[f"rate_in_{i}"]
+                        in_items += f'{rate} <figure class="image" style="{in_item_style}"><img src="{src_img}" width=50px><figcaption style="font-size: 12px;">{item}</figcaption></figure>'
 
-                src_img = df_buildings[df_buildings["name"] == row["building"]]["streamlit_path_img"].tolist()[0]
-                st.markdown(f'<div style="{container_style}">{row["name"]}, {"🔄" if row["alternate"] else "🟦"} {out_items}: <img src="{src_img}" width=80px> {in_items}</div>', unsafe_allow_html=True)
-
+                    src_img = df_buildings[df_buildings["name"] == row["building"]]["streamlit_path_img"].tolist()[0]
+                    st.markdown(f'<div style="{container_style}">{row["name"]}, {"🔄" if row["alternate"] else "🟦"} {out_items}: <img src="{src_img}" width=80px> {in_items}</div>', unsafe_allow_html=True)
+        
+        with tab2:
+            if len(response["selected_rows"]) == 1:
+                item_name = response["selected_rows"][0]["name"]
+                recipes = get_rec_recipes(item_name, df_recipes)
+                # st.write(recipes)
+                nodes, edges, config = create_genealogy_graph(recipes, item_to_img)
+                return_value = agraph(nodes=nodes, edges=edges, config=config)
 
 if __name__ == "__main__":
     main()
