@@ -26,3 +26,10 @@ def load_df(name_table):
     df = pd.read_sql(query, conn)
 
     return df
+
+
+def save_df(name_table, table):
+    config = get_configurable_parameters("configs/postgre.yaml")
+    conn = get_connexion(config)
+
+    table.to_sql(name_table, conn, if_exists='replace', index=False)
