@@ -6,7 +6,7 @@ import pandas as pd
 import base64
 
 import connect_bdd
-from utils.recipes_search import get_recipes, get_rec_recipes
+from utils.recipes_search import get_recipes, get_rec_recipes, create_raws_recipes
 from utils.graph import create_genealogy_graph
 
 # streamlit run .\streamlit.py --server.enableStaticServing true --server.port 1885
@@ -111,12 +111,12 @@ def main():
 
     with col2:
 
-        tab1, tab2 = st.tabs(["Recipe", "Genealogy"])
+        tab1, tab2, tab3 = st.tabs(["Recipe", "Genealogy", "Raw rates"])
 
         with tab1:
             if len(response["selected_rows"]) == 1:
                 item_name = response["selected_rows"][0]["name"]
-                rows = get_recipes(item_name, df_recipes)
+                rows = get_recipes(item_name, df_recipes, blacklist_building=[])
 
                 # Définir le style CSS pour le conteneur
                 container_style = """
@@ -157,12 +157,30 @@ def main():
                     st.markdown(f'<div style="{container_style}">{row["name"]}, {"🔄" if row["alternate"] else "🟦"} {out_items}: <img src="{src_img}" width=80px> {in_items}</div>', unsafe_allow_html=True)
         
         with tab2:
+            blacklist_potential = ["Water", "Empty_Canister"]
+            blacklist = []
+            for item_blacklist in blacklist_potential:
+                accept = st.checkbox(item_blacklist)
+                if not accept:
+                    blacklist.append(item_blacklist)
+
             if len(response["selected_rows"]) == 1:
                 item_name = response["selected_rows"][0]["name"]
-                recipes = get_rec_recipes(item_name, df_recipes)
+                recipes = get_rec_recipes(item_name, df_recipes, blacklist)
                 # st.write(recipes)
-                nodes, edges, config = create_genealogy_graph(recipes, item_to_img)
+                nodes, edges, config = create_genealogy_graph(recipes, item_to_img, blacklist)
                 return_value = agraph(nodes=nodes, edges=edges, config=config)
+                st.write(return_value)
+        
+        with tab3:
+            if len(response["selected_rows"]) == 1 and st.button('Compute'):
+                item_name = response["selected_rows"][0]["name"]
+                # recipes = get_rec_recipes(item_name, df_recipes, blacklist)
+                # st.write(recipes)
+                blacklist = ["Water", "Empty_Canister"]
+                raws_forced = ["Plastic", "Rubber"]
+                res = create_raws_recipes(item_name, df_recipes, blacklist, raws_forced=raws_forced)
+                st.write(res)
 
 if __name__ == "__main__":
     main()
