@@ -1,8 +1,6 @@
 import numpy as np
 from pulp import *
 
-from ..connect_bdd import load_df
-
 
 def get_items(df_recipes, df_items):
     items = list(set(list(df_recipes["item_out_1"])+list(df_recipes["item_out_2"])))
