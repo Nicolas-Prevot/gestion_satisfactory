@@ -101,6 +101,7 @@ if __name__ == "__main__":
         area_selected = area_choice["selected_rows"][0]["area"]
 
         with col2:
+            st.title(f"{area_selected}")
             display_results_item(df_factory_planner[df_factory_planner["area"] == area_selected], df_items, True)
 
         st.write("---")
@@ -156,7 +157,7 @@ if __name__ == "__main__":
                 factory_selected = factory_choice["selected_rows"][0]["factory"]
 
                 with col2_factory:
-                    st.write("TODO : factory summary")
+                    st.title(f"{factory_selected}")
                     display_results_item(df_factory_planner_factories[df_factory_planner_factories["factory"] == factory_selected], df_items)
 
                 st.write("---")
@@ -223,12 +224,17 @@ if __name__ == "__main__":
                         line_selected = line_choice["selected_rows"][0]["line"]
 
                         with col2_line:
-
+                            st.title(f"{line_selected}")
                             display_results_item(df_factory_planner_lines[df_factory_planner_lines["line"] == line_selected], df_items)
 
                             list_of_recipes = sorted(list(df_recipes["name"].unique()))
                             df_line = df_factory_planner_lines[df_factory_planner_lines["line"] == line_selected]
                             df_line_custom = pd.DataFrame(df_line[["nb_building", "rate/overclock", "recipe"]]).reset_index(drop=True)
+                            df_line_custom["building_img"] = df_line_custom["nb_building"]
+                            for i,row in df_line_custom.iterrows():
+                                if (row["recipe"] is not None):
+                                    building_name = df_recipes[df_recipes["name"] == row["recipe"]]["building"].tolist()[0]
+                                    df_line_custom["building_img"][i] = df_buildings[df_buildings["name"] == building_name]["web_img"].tolist()[0]
 
                             column_config = {
                                 "rate/overclock": st.column_config.NumberColumn(disabled=False,
@@ -248,13 +254,16 @@ if __name__ == "__main__":
                                                                            help="Recipe to manufacture",
                                                                            required=True,
                                                                            options=list_of_recipes),
+                                "building_img": st.column_config.ImageColumn(label="Building",
+                                                                            help="Type of building",
+                                                                            width="small"),
                             }
                             df_edited = st.data_editor(data=df_line_custom,
                                                      column_config=column_config,
                                                      use_container_width=True, 
                                                      num_rows="dynamic",
                                                      hide_index=True,
-                                                     column_order=["nb_building", "rate/overclock", "recipe"],
+                                                     column_order=["building_img", "nb_building", "rate/overclock", "recipe"],
                                                      key=f"data_editor_temp_{line_selected}")
 
                             if st.button("Save updates", key=f"update_{line_selected}"):
@@ -272,6 +281,7 @@ if __name__ == "__main__":
 
                                 df_factory_planner.drop(list(df_line.index), inplace=True)
                                 df_factory_planner = pd.concat([df_factory_planner, df_edited], ignore_index=True)
+                                df_factory_planner.drop("building_img", inplace=True, axis=1)
                                 save_df("factory_planner", df_factory_planner)
                                 st.experimental_rerun()
 

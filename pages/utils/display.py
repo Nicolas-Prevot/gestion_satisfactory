@@ -45,7 +45,7 @@ def display_results_item(df_factory_planner, df_items, display_in_expander=False
                 for item in results_positive:
                     conso = results_consommation[item] if item in list(results_consommation.keys()) else 0
                     prod = results_production[item] if item in list(results_production.keys()) else 0
-                    st.markdown(f'<img src="{df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]}" width=40px> {item}: \
+                    st.markdown(f'<img src="{df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]}" width=40px> {item.replace("_", " ")}: \
                                 **<span style="color:#63ACFF">{results_positive[item]}</span>** (<span style="color:#00C800">{prod}</span> | <span style="color:#FF965E">{conso}</span>)',
                                 unsafe_allow_html=True)
         with col2:
@@ -53,7 +53,7 @@ def display_results_item(df_factory_planner, df_items, display_in_expander=False
                 for item in results_negative:
                     conso = results_consommation[item] if item in list(results_consommation.keys()) else 0
                     prod = results_production[item] if item in list(results_production.keys()) else 0
-                    st.markdown(f'<img src="{df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]}" width=40px> {item}: \
+                    st.markdown(f'<img src="{df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]}" width=40px> {item.replace("_", " ")}: \
                                 **<span style="color:#FF5154">{results_negative[item]}</span>** (<span style="color:#00C800">{prod}</span> | <span style="color:#FF965E">{conso}</span>)',
                                 unsafe_allow_html=True)
                                 
