@@ -5,10 +5,11 @@ from streamlit_agraph import agraph
 import numpy as np
 import pandas as pd
 import base64
+from PIL import Image
 
-import connect_bdd
+from utils.connect_bdd import load_df
 from utils.recipes_search import get_recipes, get_rec_recipes, create_raws_recipes
-from utils.graph import create_genealogy_graph
+from pages.utils.graph import create_genealogy_graph
 from utils.optimize import get_items, get_recipes_vect, get_best_production
 
 # streamlit run .\streamlit.py --server.enableStaticServing true --server.port 1885
@@ -23,15 +24,14 @@ def ReadPictureFile(wch_fl):
 
 
 def main():
-
     st.set_page_config(
-    page_icon="🧊",
+    page_icon=Image.open("pages/logo.png"),
     layout="wide",
     initial_sidebar_state="auto",)
 
     # st.title("Visualisation des recettes de production")
 
-    df_items = connect_bdd.load_df("items")
+    df_items = load_df("items")
     new_path = []
     new_path_web = []
     for i,url in enumerate(df_items["url_img"]):
@@ -53,7 +53,7 @@ def main():
     #                hide_index=True,
     #                )
 
-    df_buildings = connect_bdd.load_df("buildings")
+    df_buildings = load_df("buildings")
     new_path = []
     for i,url in enumerate(df_buildings["url_img"]):
         new_path.append("app/"+url)
@@ -65,7 +65,7 @@ def main():
                    width=1000
                    )
 
-    df_recipes = connect_bdd.load_df("recipes")
+    df_recipes = load_df("recipes")
     st.title("recipes")
     st.write(df_recipes)
 
