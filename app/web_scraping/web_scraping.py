@@ -13,7 +13,7 @@ def get_configurable_parameters(config_path: str):
 
 
 def create_dfs(streamlit_display=False):
-    config = get_configurable_parameters("web_scraping/config_scraping.yaml")
+    config = get_configurable_parameters("configs/config_scraping.yaml")
 
     all_item_URLs = get_all_item_URLs()
     print(all_item_URLs)

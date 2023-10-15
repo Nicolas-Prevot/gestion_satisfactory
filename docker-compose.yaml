@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres
+    container_name: satisfactory_postgre
+    restart: always
+    ports:
+      - $PORT_POSTGRES:$PORT_POSTGRES
+    env_file:
+      - .env
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+    command: -p $PORT_POSTGRES
+  app:
+    build: app
+    restart: always
+    container_name: satisfactory_webapp
+    ports:
+      - $PORT_WEBAPP:$PORT_WEBAPP
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+
+    

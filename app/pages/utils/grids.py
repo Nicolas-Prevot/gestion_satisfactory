@@ -23,7 +23,7 @@ def item_selector(df_items):
 
     gb.configure_column("web_img", cellRenderer=thumbnail_renderer)
     gb.configure_default_column(editable=False, min_column_width=5)
-    gb.configure_selection("single")
+    gb.configure_selection(selection_mode="multiple", use_checkbox=True)# gb.configure_selection("single")
     grid_options = gb.build()
 
 
