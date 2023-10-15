@@ -12,14 +12,14 @@ def get_configurable_parameters(config_path: str):
     return config
 
 
-def create_dfs():
+def create_dfs(streamlit_display=False):
     config = get_configurable_parameters("web_scraping/config_scraping.yaml")
 
     all_item_URLs = get_all_item_URLs()
     print(all_item_URLs)
     print(len(all_item_URLs))
 
-    df_items, df_buildings, df_recipes = get_all_dfs(all_item_URLs, config)
+    df_items, df_buildings, df_recipes = get_all_dfs(all_item_URLs, config, streamlit_display)
 
     return df_items, df_buildings, df_recipes
 
