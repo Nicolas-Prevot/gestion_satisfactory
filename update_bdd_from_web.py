@@ -10,7 +10,7 @@ def get_configurable_parameters(config_path: str):
     return config
 
 
-def main():
+def main(streamlit_display=False):
     config = get_configurable_parameters("configs/postgre.yaml")
     
     # Chaîne de connexion à la base de données PostgreSQL
@@ -19,7 +19,7 @@ def main():
     engine = create_engine(db_url)
 
 
-    df_items, df_buildings, df_recipes = create_dfs()
+    df_items, df_buildings, df_recipes = create_dfs(streamlit_display)
 
     # Nom de la nouvelle table à créer
     table_name = 'items'
