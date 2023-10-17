@@ -63,29 +63,29 @@ def display_recipes_frame(df_recipes, df_items, df_buildings, recipe_names, nb_b
         }
 
         row = df_recipes[df_recipes["name"] == recipe_name]
-
-        iter_items = {"out":2,"in":4,}
-        for inout in iter_items:
-            for i in range(1,iter_items[inout]+1):
-                item = row[f"item_{inout}_{i}"].values[0]
-                if item is None:
-                    src_img = None
-                    rate = None
-                else:
-                    src_img = df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]
-                    rate = row[f"rate_{inout}_{i}"].values[0]
-                infos_row[f"img_{inout}_{i}"] = src_img
-                infos_row[f"name_{inout}_{i}"] = item
-                infos_row[f"rate_{inout}_{i}"] = rate
+        if len(row) != 0:
+            iter_items = {"out":2,"in":4,}
+            for inout in iter_items:
+                for i in range(1,iter_items[inout]+1):
+                    item = row[f"item_{inout}_{i}"].values[0]
+                    if item is None:
+                        src_img = None
+                        rate = None
+                    else:
+                        src_img = df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]
+                        rate = row[f"rate_{inout}_{i}"].values[0]
+                    infos_row[f"img_{inout}_{i}"] = src_img
+                    infos_row[f"name_{inout}_{i}"] = item
+                    infos_row[f"rate_{inout}_{i}"] = rate
         
-        name_building = row["building"].values[0]
-        img_building = df_buildings[df_buildings["name"] == name_building]["streamlit_path_img"].tolist()[0]
-        infos_row["name_building"] = name_building
-        infos_row["img_building"] = img_building
+            name_building = row["building"].values[0]
+            img_building = df_buildings[df_buildings["name"] == name_building]["streamlit_path_img"].tolist()[0]
+            infos_row["name_building"] = name_building
+            infos_row["img_building"] = img_building
 
-        infos_row["alternative"] = row["alternate"].values[0]
-        
-        markdown_text += get_row_text(infos_row)
+            infos_row["alternative"] = row["alternate"].values[0]
+            
+            markdown_text += get_row_text(infos_row)
         
     st.markdown(markdown_text, unsafe_allow_html=True)
 
