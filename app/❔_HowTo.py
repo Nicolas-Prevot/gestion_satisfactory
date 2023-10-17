@@ -1,8 +1,22 @@
 import streamlit as st
 from pathlib import Path
 from PIL import Image
+import sys
+import os
 
 if __name__ == "__main__":
+    if (len(sys.argv) > 1):
+        if (sys.argv[1] == "__setEnv"):
+            try:
+                with open(f"{os.getcwd()}\\..\\.env") as file:
+                    lines = file.readlines()
+                    for line in lines:
+                        os.environ[line.split(": ")[0]] = line.split(": ")[1].split("\n")[0]
+                os.environ["HOST"] = "localhost"
+            except Exception as error:
+                print(error)
+            print(list(os.environ.items())[-len(lines):])
+    
     st.set_page_config(
     page_icon=Image.open("pages/logo.png"),
     layout="wide",

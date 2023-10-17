@@ -11,11 +11,11 @@ docker pull postgres
 create '.env' file and add the following parameters:
 
 ```yaml
-HOST: <hostname>
+HOST: postgres
 PORT_POSTGRES: <postgres_port>
 PORT_WEBAPP: <postgres_port>
-DATABASE: <database_name>
-USER: <database_user>
+DATABASE: satisfactory
+USER: postgres
 PASSWORD: <database_mdp>
 ```
 
@@ -23,17 +23,18 @@ PASSWORD: <database_mdp>
 docker compose up -d --build
 ```
 
-## Setup Python env + init
+## Setup Python env + init (development purpose)
 
 ```bash
 python install -r requirements.txt
 ```
 
+To update database from terminal:
 ```bash
 python update_bdd_from_web.py
 ```
 
+To execute app from terminal:
 ```bash
-# The server port 8501 can be choosen differently, it's up to you !
-streamlit run .\streamlit.py --server.enableStaticServing true --server.port 8501
+cd ./app; Streamlit run ./❔_HowTo.py __setEnv --server.port <server_port> --server.enableStaticServing true
 ```
