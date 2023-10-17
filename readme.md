@@ -10,13 +10,13 @@ docker pull postgres
 
 create '.env' file and add the following parameters:
 
-```yaml
-HOST: postgres
-PORT_POSTGRES: <postgres_port>
-PORT_WEBAPP: <postgres_port>
-DATABASE: satisfactory
-USER: postgres
-PASSWORD: <database_mdp>
+```properties
+HOST=postgres
+PORT_POSTGRES=<postgres_port>
+PORT_WEBAPP=<postgres_port>
+POSTGRES_DB=satisfactory
+USER=postgres
+POSTGRES_PASSWORD=<database_mdp>
 ```
 
 ```bash

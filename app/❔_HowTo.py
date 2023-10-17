@@ -7,11 +7,12 @@ import os
 if __name__ == "__main__":
     if (len(sys.argv) > 1):
         if (sys.argv[1] == "__setEnv"):
+            print(f"{os.path.realpath(os.path.dirname(__file__))}\\..\\.env")
             try:
-                with open(f"{os.getcwd()}\\..\\.env") as file:
+                with open(f"{os.path.realpath(os.path.dirname(__file__))}\\..\\.env") as file:
                     lines = file.readlines()
                     for line in lines:
-                        os.environ[line.split(": ")[0]] = line.split(": ")[1].split("\n")[0]
+                        os.environ[line.split("=")[0]] = line.split("=")[1].split("\n")[0]
                 os.environ["HOST"] = "localhost"
             except Exception as error:
                 print(error)
