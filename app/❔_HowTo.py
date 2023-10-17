@@ -18,8 +18,9 @@ if __name__ == "__main__":
                 print(error)
             print(list(os.environ.items())[-len(lines):])
     
+    print(os.path.realpath(os.path.dirname(__file__)))
     st.set_page_config(
-    page_icon=Image.open("pages/logo.png"),
+    page_icon=Image.open(f"{os.path.realpath(os.path.dirname(__file__))}/pages/logo.png"),
     layout="wide",
     initial_sidebar_state="auto",)
 

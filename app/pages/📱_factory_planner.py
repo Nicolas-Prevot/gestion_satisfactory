@@ -4,6 +4,7 @@ from streamlit_agraph import agraph
 
 import pandas as pd
 import numpy as np
+import os
 from PIL import Image
 
 from pages.utils.load_df import get_df_from_tables
@@ -36,7 +37,7 @@ def cached_get_df_from_tables():
 
 if __name__ == "__main__":
     st.set_page_config(
-        page_icon=Image.open("pages/logo.png"),
+        page_icon=Image.open(f"{os.path.realpath(os.path.dirname(__file__))}\\logo.png"),
         layout="wide",
         initial_sidebar_state="auto",
     )

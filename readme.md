@@ -36,5 +36,5 @@ python update_bdd_from_web.py
 
 To execute app from terminal:
 ```bash
-cd ./app; Streamlit run ./❔_HowTo.py __setEnv --server.port <server_port> --server.enableStaticServing true
+Streamlit run ./app/❔_HowTo.py __setEnv --server.port <server_port> --server.enableStaticServing true
 ```
