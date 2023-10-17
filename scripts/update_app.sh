@@ -6,7 +6,7 @@ cd ..
 sudo docker compose down
 
 # Delete all containers using the following command:
-sudo docker rmi -f gestion_satisfactory_app
+sudo docker rmi -f gestion_satisfactory-app
 sudo docker rmi -f postgres
 
 # Delete all volumes using the following command:
