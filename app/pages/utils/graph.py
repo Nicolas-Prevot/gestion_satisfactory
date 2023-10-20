@@ -38,7 +38,7 @@ def create_genealogy_graph(recipes, item_to_img, blacklist):
 
 
 def create_recipe_optimize(df_items, df_buildings, df_recipes, recipe_names, Lmbda_soln):
-    config = Config(width=750,
+    config = Config(width=1000,
                     height=650,
                     directed=True,
                     physics=True,

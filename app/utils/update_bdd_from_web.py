@@ -1,20 +1,14 @@
 from operator import ge
-from omegaconf import OmegaConf
+import os
 from sqlalchemy import create_engine
 
 from web_scraping.web_scraping import create_dfs
 
 
-def get_configurable_parameters(config_path: str):
-    config = OmegaConf.load(config_path)
-    return config
-
-
 def main(streamlit_display=False):
-    config = get_configurable_parameters("configs/postgre.yaml")
     
     # Chaîne de connexion à la base de données PostgreSQL
-    db_url = f'postgresql://{config.PostgreSQL.user}:{config.PostgreSQL.password}@{config.PostgreSQL.host}:{config.PostgreSQL.port}/{config.PostgreSQL.database}'
+    db_url = f"postgresql://{os.environ['USER']}:{os.environ['POSTGRES_PASSWORD']}@{os.environ['HOST']}:{os.environ['PORT_POSTGRES']}/{os.environ['POSTGRES_DB']}"
     # Création du moteur SQLAlchemy
     engine = create_engine(db_url)
 
