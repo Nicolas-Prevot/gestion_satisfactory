@@ -13,7 +13,7 @@ create '.env' file and add the following parameters:
 ```properties
 HOST=postgres
 PORT_POSTGRES=<postgres_port>
-PORT_WEBAPP=<postgres_port>
+PORT_WEBAPP=<webapp_port>
 POSTGRES_DB=satisfactory
 USER=postgres
 POSTGRES_PASSWORD=<database_mdp>
