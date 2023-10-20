@@ -13,6 +13,6 @@ sudo docker rmi -f postgres
 #docker volume rm $(docker volume ls -q)
 
 # Restart the containers using the following command:
-sudo docker-compose up -d --build
+sudo docker compose up -d --build
 
 cd scripts
