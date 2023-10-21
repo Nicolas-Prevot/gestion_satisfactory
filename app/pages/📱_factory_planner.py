@@ -82,7 +82,7 @@ if __name__ == "__main__":
                     if ok:
                         delete_table(dict_display_table[factory_planner_selected_to_delete_display])
                         st.success("Table deleted!")
-                        st.experimental_rerun()
+                        st.rerun()
                     else:
                         st.warning("Are you sure ? Please confirm")
 
@@ -136,7 +136,7 @@ if __name__ == "__main__":
                     df_factory_planner = pd.concat([df_factory_planner, pd.DataFrame(row, columns=df_factory_planner_columns)], ignore_index=True)
                     save_df(factory_planner_selected, df_factory_planner)
                     st.success(f'Area added: "{new_area_name}"')
-                    st.experimental_rerun()
+                    st.rerun()
         
         if len(area_choice["selected_rows"]) > 0:
             area_selected = area_choice["selected_rows"][0]["area"]
@@ -157,14 +157,14 @@ if __name__ == "__main__":
                             row = [[area_selected, str(new_factory_name)]+[np.nan]*(len(df_factory_planner_columns)-2)]
                             df_factory_planner = pd.concat([df_factory_planner, pd.DataFrame(row, columns=df_factory_planner_columns)], ignore_index=True)
                             save_df(factory_planner_selected, df_factory_planner)
-                            st.experimental_rerun()
+                            st.rerun()
                     with col2:
                         if st.checkbox('Write "delete" to confirm'): #st.button("Do you want to remove this area ?", key="remove_area_button"):
                             confirmation = st.text_input('Write "delete" to confirm', '')
                             if confirmation == "delete":
                                 df_factory_planner = df_factory_planner[df_factory_planner["area"] != area_selected]
                                 save_df(factory_planner_selected, df_factory_planner)
-                                st.experimental_rerun()
+                                st.rerun()
 
                 col1_factory, col2_factory = st.columns(spec=[1,3])
 
@@ -213,7 +213,7 @@ if __name__ == "__main__":
                                     row = [[area_selected, factory_selected, str(new_line_name)]+[np.nan]*(len(df_factory_planner_columns)-3)]
                                     df_factory_planner = pd.concat([df_factory_planner, pd.DataFrame(row, columns=df_factory_planner_columns)], ignore_index=True)
                                     save_df(factory_planner_selected, df_factory_planner)
-                                    st.experimental_rerun()
+                                    st.rerun()
                             with col2:
                                 if st.checkbox('Write "delete" to confirm', key=f"delete_factory_{factory_selected}"): #st.button("Do you want to remove this area ?", key="remove_area_button"):
                                     confirmation = st.text_input('Write "delete" to confirm', '')
@@ -221,7 +221,7 @@ if __name__ == "__main__":
                                         df_factory_planner = df_factory_planner[(df_factory_planner["area"] != area_selected) | 
                                                                                 ((df_factory_planner["area"] == area_selected) & (df_factory_planner["factory"] != factory_selected))]
                                         save_df(factory_planner_selected, df_factory_planner)
-                                        st.experimental_rerun()
+                                        st.rerun()
 
                         col1_line, col2_line = st.columns(spec=[1,3])
 
@@ -259,7 +259,7 @@ if __name__ == "__main__":
                                                 df_factory_planner_to_delete = df_factory_planner_lines[df_factory_planner_lines["line"] == line_selected]
                                                 df_factory_planner.drop(list(df_factory_planner_to_delete.index), inplace=True)
                                                 save_df(factory_planner_selected, df_factory_planner)
-                                                st.experimental_rerun()
+                                                st.rerun()
 
                         if len(line_choice["selected_rows"]) > 0:
                             line_selected = line_choice["selected_rows"][0]["line"]
@@ -316,7 +316,7 @@ if __name__ == "__main__":
                                         df_factory_planner.drop(list(df_line.index), inplace=True)
                                         df_factory_planner = pd.concat([df_factory_planner, df_edited], ignore_index=True)
                                         save_df(factory_planner_selected, df_factory_planner)
-                                        st.experimental_rerun()
+                                        st.rerun()
 
                                 display_recipes_frame(df_recipes, df_items, df_buildings, df_line["recipe"], df_line["nb_building"], df_line["rate/overclock"])
 
