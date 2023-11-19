@@ -29,8 +29,11 @@ if __name__ == "__main__":
     initial_sidebar_state="auto",)
 
 
-    df_items, df_buildings, df_recipes = cached_get_df_from_tables()
-
+    try:
+        df_items, df_buildings, df_recipes = cached_get_df_from_tables()
+    except:
+        st.error("There is no database, go to 🛠️_Database_manager and 'Fetch data'")
+        st.stop()
 
     st.title("Here optimize your production recipes")
 
