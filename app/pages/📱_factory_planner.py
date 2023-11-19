@@ -54,9 +54,10 @@ if __name__ == "__main__":
 
         with st.expander(f"Create a new party", expanded=False):
             with st.form("form_create_party"):
-                name_new_table = st.text_input(label="Choose a name")
-                new_table_name = display_name_to_table_name(name_new_table)
-                display_name = table_name_to_display_name(new_table_name)
+                name_new_table = st.text_input(label="Choose a name", value="")
+                if name_new_table is not "":
+                    new_table_name = display_name_to_table_name(name_new_table)
+                    display_name = table_name_to_display_name(new_table_name)
                 
                 submitted = st.form_submit_button("Submit")
                 if submitted:
@@ -130,7 +131,7 @@ if __name__ == "__main__":
                                 )
                             
             with st.expander(f"Add Area", expanded=False):
-                new_area_name = st.text_input("Add area", placeholder="Name of the area")
+                new_area_name = st.text_input("Add area", placeholder="Name of the area", value="")
                 if st.button("Confirm", key="add_area_button") and new_area_name != "":
                     row = [[str(new_area_name)]+[np.nan]*(len(df_factory_planner_columns)-1)]
                     df_factory_planner = pd.concat([df_factory_planner, pd.DataFrame(row, columns=df_factory_planner_columns)], ignore_index=True)
@@ -150,17 +151,24 @@ if __name__ == "__main__":
             with st.container():
                 
                 with st.expander(f"⚙️ Manage Area ⚙️", expanded=False):
-                    col1, col2 = st.columns(2)
+                    col1, col2, col3 = st.columns(3)
                     with col1:
-                        new_factory_name = st.text_input("Add factory", placeholder="Name of factory")
+                        new_factory_name = st.text_input("Add factory", placeholder="Name of factory", value="")
                         if st.button("Confirm") and new_factory_name != "":
                             row = [[area_selected, str(new_factory_name)]+[np.nan]*(len(df_factory_planner_columns)-2)]
                             df_factory_planner = pd.concat([df_factory_planner, pd.DataFrame(row, columns=df_factory_planner_columns)], ignore_index=True)
                             save_df(factory_planner_selected, df_factory_planner)
                             st.rerun()
                     with col2:
-                        if st.checkbox('Delete area ?'): #st.button("Do you want to remove this area ?", key="remove_area_button"):
-                            confirmation = st.text_input(f'Write "{area_selected}" to confirm', '')
+                        if st.checkbox('Rename area ?'):
+                            confirmation = st.text_input(label='New name:', placeholder=f'Name to replace "{area_selected}"', value="")
+                            if confirmation is not "":
+                                df_factory_planner['area'].replace(area_selected, confirmation, inplace=True)
+                                save_df(factory_planner_selected, df_factory_planner)
+                                st.rerun()
+                    with col3:
+                        if st.checkbox('Delete area ?'):
+                            confirmation = st.text_input(f'Write "{area_selected}" to confirm', value="")
                             if confirmation == area_selected:
                                 df_factory_planner = df_factory_planner[df_factory_planner["area"] != area_selected]
                                 save_df(factory_planner_selected, df_factory_planner)
@@ -206,17 +214,24 @@ if __name__ == "__main__":
                     with st.container():
 
                         with st.expander(f"⚙️ Manage Factory ⚙️", expanded=False):
-                            col1, col2 = st.columns(2)
+                            col1, col2, col3 = st.columns(3)
                             with col1:
-                                new_line_name = st.text_input("Add production line", placeholder="Name of production line", key=f"text_input_{factory_selected}")
+                                new_line_name = st.text_input("Add production line", placeholder="Name of production line", key=f"text_input_{factory_selected}", value="")
                                 if st.button("Confirm", key=f"button_confirm_{factory_selected}") and new_line_name != "":
                                     row = [[area_selected, factory_selected, str(new_line_name)]+[np.nan]*(len(df_factory_planner_columns)-3)]
                                     df_factory_planner = pd.concat([df_factory_planner, pd.DataFrame(row, columns=df_factory_planner_columns)], ignore_index=True)
                                     save_df(factory_planner_selected, df_factory_planner)
                                     st.rerun()
                             with col2:
-                                if st.checkbox('Delete factory ?', key=f"delete_factory_{factory_selected}"): #st.button("Do you want to remove this area ?", key="remove_area_button"):
-                                    confirmation = st.text_input(f'Write "{factory_selected}" to confirm', '')
+                                if st.checkbox('Rename factory ?'):
+                                    confirmation = st.text_input(label='New name:', placeholder=f'Name to replace "{factory_selected}"', value="")
+                                    if confirmation is not "":
+                                        df_factory_planner['factory'].replace(factory_selected, confirmation, inplace=True)
+                                        save_df(factory_planner_selected, df_factory_planner)
+                                        st.rerun()
+                            with col3:
+                                if st.checkbox('Delete factory ?', key=f"delete_factory_{factory_selected}"):
+                                    confirmation = st.text_input(f'Write "{factory_selected}" to confirm', value="")
                                     if confirmation == factory_selected:
                                         df_factory_planner = df_factory_planner[(df_factory_planner["area"] != area_selected) | 
                                                                                 ((df_factory_planner["area"] == area_selected) & (df_factory_planner["factory"] != factory_selected))]
@@ -252,14 +267,20 @@ if __name__ == "__main__":
                             if len(line_choice["selected_rows"]) > 0:
                                 line_selected = line_choice["selected_rows"][0]["line"]
 
-                                with st.expander(f"⚙️ Delete line ⚙️", expanded=False):
-                                    if st.checkbox('Delete production line ?', key=f"delete_line_{line_selected}"): #st.button("Do you want to remove this area ?", key="remove_area_button"):
-                                            confirmation = st.text_input(f'Write "{line_selected}" to confirm', '')
-                                            if confirmation == line_selected:
-                                                df_factory_planner_to_delete = df_factory_planner_lines[df_factory_planner_lines["line"] == line_selected]
-                                                df_factory_planner.drop(list(df_factory_planner_to_delete.index), inplace=True)
-                                                save_df(factory_planner_selected, df_factory_planner)
-                                                st.rerun()
+                                with st.expander(f"⚙️ Manage line ⚙️", expanded=False):
+                                    if st.checkbox('Delete production line ?', key=f"delete_line_{line_selected}"):
+                                        confirmation = st.text_input(f'Write "{line_selected}" to confirm', value="")
+                                        if confirmation == line_selected:
+                                            df_factory_planner_to_delete = df_factory_planner_lines[df_factory_planner_lines["line"] == line_selected]
+                                            df_factory_planner.drop(list(df_factory_planner_to_delete.index), inplace=True)
+                                            save_df(factory_planner_selected, df_factory_planner)
+                                            st.rerun()
+                                    if st.checkbox('Rename production line ?'):
+                                        confirmation = st.text_input(label='New name:', placeholder=f'Name to replace "{line_selected}"', value="")
+                                        if confirmation is not "":
+                                            df_factory_planner['line'].replace(line_selected, confirmation, inplace=True)
+                                            save_df(factory_planner_selected, df_factory_planner)
+                                            st.rerun()
 
                         if len(line_choice["selected_rows"]) > 0:
                             line_selected = line_choice["selected_rows"][0]["line"]
