@@ -159,9 +159,9 @@ if __name__ == "__main__":
                             save_df(factory_planner_selected, df_factory_planner)
                             st.rerun()
                     with col2:
-                        if st.checkbox('Write "delete" to confirm'): #st.button("Do you want to remove this area ?", key="remove_area_button"):
-                            confirmation = st.text_input('Write "delete" to confirm', '')
-                            if confirmation == "delete":
+                        if st.checkbox('Delete area ?'): #st.button("Do you want to remove this area ?", key="remove_area_button"):
+                            confirmation = st.text_input(f'Write "{area_selected}" to confirm', '')
+                            if confirmation == area_selected:
                                 df_factory_planner = df_factory_planner[df_factory_planner["area"] != area_selected]
                                 save_df(factory_planner_selected, df_factory_planner)
                                 st.rerun()
@@ -215,9 +215,9 @@ if __name__ == "__main__":
                                     save_df(factory_planner_selected, df_factory_planner)
                                     st.rerun()
                             with col2:
-                                if st.checkbox('Write "delete" to confirm', key=f"delete_factory_{factory_selected}"): #st.button("Do you want to remove this area ?", key="remove_area_button"):
-                                    confirmation = st.text_input('Write "delete" to confirm', '')
-                                    if confirmation == "delete":
+                                if st.checkbox('Delete factory ?', key=f"delete_factory_{factory_selected}"): #st.button("Do you want to remove this area ?", key="remove_area_button"):
+                                    confirmation = st.text_input(f'Write "{factory_selected}" to confirm', '')
+                                    if confirmation == factory_selected:
                                         df_factory_planner = df_factory_planner[(df_factory_planner["area"] != area_selected) | 
                                                                                 ((df_factory_planner["area"] == area_selected) & (df_factory_planner["factory"] != factory_selected))]
                                         save_df(factory_planner_selected, df_factory_planner)
@@ -253,9 +253,9 @@ if __name__ == "__main__":
                                 line_selected = line_choice["selected_rows"][0]["line"]
 
                                 with st.expander(f"⚙️ Delete line ⚙️", expanded=False):
-                                    if st.checkbox('Write "delete" to confirm', key=f"delete_line_{factory_selected}"): #st.button("Do you want to remove this area ?", key="remove_area_button"):
-                                            confirmation = st.text_input('Write "delete" to confirm', '')
-                                            if confirmation == "delete":
+                                    if st.checkbox('Delete production line ?', key=f"delete_line_{line_selected}"): #st.button("Do you want to remove this area ?", key="remove_area_button"):
+                                            confirmation = st.text_input(f'Write "{line_selected}" to confirm', '')
+                                            if confirmation == line_selected:
                                                 df_factory_planner_to_delete = df_factory_planner_lines[df_factory_planner_lines["line"] == line_selected]
                                                 df_factory_planner.drop(list(df_factory_planner_to_delete.index), inplace=True)
                                                 save_df(factory_planner_selected, df_factory_planner)
