@@ -55,7 +55,7 @@ if __name__ == "__main__":
         with st.expander(f"Create a new party", expanded=False):
             with st.form("form_create_party"):
                 name_new_table = st.text_input(label="Choose a name", value="")
-                if name_new_table is not "":
+                if name_new_table != "":
                     new_table_name = display_name_to_table_name(name_new_table)
                     display_name = table_name_to_display_name(new_table_name)
                 
@@ -162,7 +162,7 @@ if __name__ == "__main__":
                     with col2:
                         if st.checkbox('Rename area ?'):
                             confirmation = st.text_input(label='New name:', placeholder=f'Name to replace "{area_selected}"', value="")
-                            if confirmation is not "":
+                            if confirmation != "":
                                 df_factory_planner['area'].replace(area_selected, confirmation, inplace=True)
                                 save_df(factory_planner_selected, df_factory_planner)
                                 st.rerun()
@@ -225,7 +225,7 @@ if __name__ == "__main__":
                             with col2:
                                 if st.checkbox('Rename factory ?'):
                                     confirmation = st.text_input(label='New name:', placeholder=f'Name to replace "{factory_selected}"', value="")
-                                    if confirmation is not "":
+                                    if confirmation != "":
                                         df_factory_planner_factories.replace(factory_selected, confirmation, inplace=True)
                                         df_factory_planner.drop(list(df_factory_planner_factories.index), inplace=True)
                                         df_factory_planner = pd.concat([df_factory_planner, df_factory_planner_factories], ignore_index=True)
@@ -279,7 +279,7 @@ if __name__ == "__main__":
                                             st.rerun()
                                     if st.checkbox('Rename production line ?'):
                                         confirmation = st.text_input(label='New name:', placeholder=f'Name to replace "{line_selected}"', value="")
-                                        if confirmation is not "":
+                                        if confirmation != "":
                                             df_factory_planner_lines.replace(line_selected, confirmation, inplace=True)
                                             df_factory_planner.drop(list(df_factory_planner_lines.index), inplace=True)
                                             df_factory_planner = pd.concat([df_factory_planner, df_factory_planner_lines], ignore_index=True)

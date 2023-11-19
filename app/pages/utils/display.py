@@ -113,6 +113,7 @@ def display_results_item(df_factory_planner, df_items, display_in_expander=False
 
     results_positive = {}
     results_negative = {}
+    results_negative_imports = {}
     for item in results_consommation:
         if (item in list(results_production.keys())):
             result = results_consommation[item] + results_production[item]
@@ -121,7 +122,7 @@ def display_results_item(df_factory_planner, df_items, display_in_expander=False
             else:
                 results_positive[item] = result
         else:
-            results_negative[item] = results_consommation[item]
+            results_negative_imports[item] = results_consommation[item]
 
     for item in results_production:
         if (item not in list(results_consommation.keys())):
@@ -130,7 +131,7 @@ def display_results_item(df_factory_planner, df_items, display_in_expander=False
     st.write(f"⚡ {power_usage} MW ⚡")
 
     def write_cols():
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         with col1:
             if (len(results_positive) != 0):
                 for item in results_positive:
@@ -146,6 +147,14 @@ def display_results_item(df_factory_planner, df_items, display_in_expander=False
                     prod = results_production[item] if item in list(results_production.keys()) else 0
                     st.markdown(f'<img src="{df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]}" width=40px> {item.replace("_", " ")}: \
                                 **<span style="color:#FF5154">{results_negative[item]}</span>** (<span style="color:#00C800">{prod}</span> | <span style="color:#FF965E">{conso}</span>)',
+                                unsafe_allow_html=True)
+        with col3:
+            if (len(results_negative_imports) != 0):
+                for item in results_negative_imports:
+                    conso = results_consommation[item] if item in list(results_consommation.keys()) else 0
+                    prod = results_production[item] if item in list(results_production.keys()) else 0
+                    st.markdown(f'<img src="{df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]}" width=40px> {item.replace("_", " ")}: \
+                                **<span style="color:#FF5154">{results_negative_imports[item]}</span>** (<span style="color:#00C800">{prod}</span> | <span style="color:#FF965E">{conso}</span>)',
                                 unsafe_allow_html=True)
                                 
     if (display_in_expander):
