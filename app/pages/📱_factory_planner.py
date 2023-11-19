@@ -41,11 +41,15 @@ if __name__ == "__main__":
         layout="wide",
         initial_sidebar_state="auto",
     )
-        
-    list_tables = get_list_tables()
-    list_tables.remove("items")
-    list_tables.remove("buildings")
-    list_tables.remove("recipes")
+
+    try:
+        list_tables = get_list_tables()
+        list_tables.remove("items")
+        list_tables.remove("buildings")
+        list_tables.remove("recipes")
+    except:
+        st.error("There is no database, go to 🛠️_Database_manager and 'Fetch data'")
+        st.stop()
 
     dict_display_table = {table_name_to_display_name(name):name for name in list_tables}
 
