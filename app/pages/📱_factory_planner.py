@@ -226,7 +226,9 @@ if __name__ == "__main__":
                                 if st.checkbox('Rename factory ?'):
                                     confirmation = st.text_input(label='New name:', placeholder=f'Name to replace "{factory_selected}"', value="")
                                     if confirmation is not "":
-                                        df_factory_planner['factory'].replace(factory_selected, confirmation, inplace=True)
+                                        df_factory_planner_factories.replace(factory_selected, confirmation, inplace=True)
+                                        df_factory_planner.drop(list(df_factory_planner_factories.index), inplace=True)
+                                        df_factory_planner = pd.concat([df_factory_planner, df_factory_planner_factories], ignore_index=True)
                                         save_df(factory_planner_selected, df_factory_planner)
                                         st.rerun()
                             with col3:
@@ -278,7 +280,9 @@ if __name__ == "__main__":
                                     if st.checkbox('Rename production line ?'):
                                         confirmation = st.text_input(label='New name:', placeholder=f'Name to replace "{line_selected}"', value="")
                                         if confirmation is not "":
-                                            df_factory_planner['line'].replace(line_selected, confirmation, inplace=True)
+                                            df_factory_planner_lines.replace(line_selected, confirmation, inplace=True)
+                                            df_factory_planner.drop(list(df_factory_planner_lines.index), inplace=True)
+                                            df_factory_planner = pd.concat([df_factory_planner, df_factory_planner_lines], ignore_index=True)
                                             save_df(factory_planner_selected, df_factory_planner)
                                             st.rerun()
 
