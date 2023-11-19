@@ -1,10 +1,11 @@
 
 # STUFF THAT SHOULD NOT ENCUMBER REPO
 static/
-configs/
 help/
 pg_data/
-docker-compose.yaml
+*temp*
+*test*
+*truc*
 
 # PERSONNAL SETTINGS
 .idea/

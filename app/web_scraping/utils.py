@@ -6,6 +6,39 @@ import pandas as pd
 import shutil
 from tqdm import tqdm
 
+# For streamlit display
+class sttqdm:
+    def __init__(self, iterable, title=None, total=-1, streamlit_display=False):
+        self.streamlit_display = streamlit_display
+        if (total < 0):
+            self.length = len(iterable)
+        else:
+            self.length = total
+
+        if (self.streamlit_display):
+            import streamlit as st
+
+            if title:
+                st.write(title)
+            self.prog_bar = st.progress(0)
+            self.iterable = iterable
+            self.i = 0
+
+        self.tqdm = tqdm(iterable, title, self.length)
+
+    def __iter__(self):
+    
+        for obj in self.tqdm:
+            yield obj
+            if (self.streamlit_display):
+                self.i += 1
+                current_prog = self.i / self.length
+                self.prog_bar.progress(current_prog)
+        if (self.streamlit_display):
+            self.prog_bar.empty()
+        
+        
+
 def get_recipe_name(table_td):
     """
     Return name of recipe from Soup.
@@ -299,7 +332,9 @@ def save_img(name, url, path):
     return path
 
 
-def get_all_dfs(extensions_list: list, config):
+def get_all_dfs(extensions_list: list, config, streamlit_display=False):
+    if (streamlit_display):
+        import streamlit as st
 
     # Get list of item name URLs, convert to full URLs for scraping.
     all_item_URLs = get_all_URLs_to_scrape(extensions_list)
@@ -307,7 +342,9 @@ def get_all_dfs(extensions_list: list, config):
     print(len(all_item_URLs), all_item_URLs)
 
     # Get Soup list from all item URLs.
-    all_recipe_soups = [get_recipe_soup(recipe_page) for recipe_page in tqdm(all_item_URLs)]
+    if (streamlit_display):
+        st.write("Get Soup list from all item URLs")
+    all_recipe_soups = [get_recipe_soup(recipe_page) for recipe_page in sttqdm(all_item_URLs, streamlit_display=streamlit_display)]
 
     # Init dict for futur dataFrames
     df_items = {"name":[],"solid":[], "url_img":[]}
@@ -321,7 +358,9 @@ def get_all_dfs(extensions_list: list, config):
                "item_out_2":[],"rate_out_2":[]}
 
     # Complete dicts from pages soup
-    for recipe_soup in tqdm(all_recipe_soups):
+    if (streamlit_display):
+        st.write("Complete dicts from pages soup")
+    for recipe_soup in sttqdm(all_recipe_soups, streamlit_display=streamlit_display):
         items, buildings, recipes = scrape_recipe_page(recipe_soup)
         for key in df_items:
             df_items[key] += items[key]
@@ -346,18 +385,24 @@ def get_all_dfs(extensions_list: list, config):
     print(df_recipes)
 
     # Download images and change url with path saved
-    for i, (name, url) in tqdm(enumerate(zip(df_items.name, df_items.url_img)), total=len(df_items.name)):
+    if (streamlit_display):
+        st.write("Download images and change url with path saved")
+    for i, (name, url) in sttqdm(enumerate(zip(df_items.name, df_items.url_img)), total=len(df_items.name), streamlit_display=streamlit_display):
         path_img = save_img(name, url, config.project.path_imgs)
         df_items.url_img[i] = path_img
 
     # Collect soups from building urls
     all_buildings_soups = []
-    for building_page in tqdm(df_buildings.url_img):
+    if (streamlit_display):
+        st.write("Collect soups from building urls")
+    for building_page in sttqdm(df_buildings.url_img, streamlit_display=streamlit_display):
         building_soup = get_building_soup(building_page)
         all_buildings_soups.append(building_soup)
 
     # download images and change url with path saved
-    for i, (building_name, building_soup) in tqdm(enumerate(zip(df_buildings.name, all_buildings_soups)), total=len(df_buildings.name)):
+    if (streamlit_display):
+        st.write("Download images and change url with path saved")
+    for i, (building_name, building_soup) in sttqdm(enumerate(zip(df_buildings.name, all_buildings_soups)), total=len(df_buildings.name), streamlit_display=streamlit_display):
         base_power_use, url_img = scrape_building_page(building_soup)
         path_img = save_img(building_name, url_img, config.project.path_imgs)
         df_buildings.base_power_use[i] = base_power_use
@@ -368,9 +413,3 @@ def get_all_dfs(extensions_list: list, config):
     print(df_recipes)
 
     return df_items, df_buildings, df_recipes
-
-
-
-
-
-

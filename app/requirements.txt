@@ -1,0 +1,9 @@
+streamlit
+streamlit-aggrid
+streamlit-agraph
+PuLP
+SQLAlchemy
+omegaconf
+psycopg2-binary
+bs4
+tqdm

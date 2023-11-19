@@ -8,50 +8,33 @@ install Docker
 docker pull postgres
 ```
 
-create docker-compose.yaml
+create '.env' file and add the following parameters:
 
-```yaml
-version: "3.9"
-services:
-  postgres:
-    image: postgres
-    container_name: <mon-postgres>
-    restart: always
-    ports:
-      - 5432:5432
-    environment:
-      POSTGRES_PASSWORD: <mypassword>
-      POSTGRES_DB: satisfactory
-    volumes:
-      - ./pg_data:/var/lib/postgresql/data
+```properties
+HOST=postgres
+PORT_POSTGRES=<postgres_port>
+PORT_WEBAPP=<webapp_port>
+POSTGRES_DB=satisfactory
+USER=postgres
+POSTGRES_PASSWORD=<database_mdp>
 ```
 
 ```bash
-docker-compose up -d
+docker compose up -d --build
 ```
 
-## Setup Python env + init
+## Setup Python env + init (development purpose)
 
 ```bash
 python install -r requirements.txt
 ```
 
-create folder configs then 
-create file postgre.yaml
-
-```yaml
-PostgreSQL:
-  host: localhost
-  port: 5432
-  database: satisfactory
-  user: postgres
-  password: <mypassword>
-```
-
+To update database from terminal:
 ```bash
 python update_bdd_from_web.py
 ```
 
+To execute app from terminal:
 ```bash
-streamlit run .\streamlit.py --server.enableStaticServing true --server.port <8501>
+Streamlit run ./app/❔_HowTo.py __setEnv --server.port <server_port> --server.enableStaticServing true
 ```
