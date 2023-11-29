@@ -26,7 +26,7 @@ docker compose up -d --build
 ## Setup Python env + init (development purpose)
 
 ```bash
-python install -r requirements.txt
+python install -r ./app/requirements.txt
 ```
 
 To update database from terminal:
@@ -36,5 +36,6 @@ python update_bdd_from_web.py
 
 To execute app from terminal:
 ```bash
-Streamlit run ./app/❔_HowTo.py __setEnv --server.port <server_port> --server.enableStaticServing true
+cd ./app
+Streamlit run ./❔_HowTo.py __setEnv --server.port <server_port> --server.enableStaticServing true
 ```
