@@ -1,40 +1,41 @@
-# How to setup the workspace
+# Gestion Satisfactory
 
-## Setup Docker + PostGre server
+This project is a web application designed to help you manage and optimize production recipes in the game Satisfactory.
 
-install Docker
+## Prerequisites
 
-```bash
-docker pull postgres
-```
+### For running with Docker
 
-create '.env' file and add the following parameters:
+- Docker
+- Docker compose
 
-```properties
-HOST=postgres
-PORT_POSTGRES=<postgres_port>
-PORT_WEBAPP=<webapp_port>
-POSTGRES_DB=satisfactory
-USER=postgres
-POSTGRES_PASSWORD=<database_mdp>
-```
+## Running the App with Docker
 
-```bash
-docker compose up -d --build
-```
+### Setup Instructions
 
-## Setup Python env + init (development purpose)
+1. Clone the Repository
 
-```bash
-python install -r requirements.txt
-```
+    ```bash
+    git clone https://github.com/Nicolas-Prevot/gestion_satisfactory.git
+    cd gestion_satisfactory
+    ```
 
-To update database from terminal:
-```bash
-python update_bdd_from_web.py
-```
+2. Set Up Environment Variables
 
-To execute app from terminal:
-```bash
-Streamlit run ./app/❔_HowTo.py __setEnv --server.port <server_port> --server.enableStaticServing true
-```
+    - Copy the `default.env` file to `.env` if it doesn't exist:
+
+        ```bash
+        cp default.env .env
+        ```
+
+    - Update the `.env` file with your desired configuration.
+
+3. Build and Run the Docker Containers
+
+    ```bash
+    docker compose up -d --build
+    ```
+
+4. Access the Application
+
+   - Open your web browser and navigate to `http://localhost:<PORT_WEBAPP>` (the port you specified in the .env file).

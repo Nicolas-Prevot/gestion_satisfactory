@@ -1,25 +1,33 @@
-version: "3.9"
 services:
   postgres:
     image: postgres:16
     container_name: satisfactory_postgres
     restart: always
     ports:
-      - $PORT_POSTGRES:$PORT_POSTGRES
+      - "${PORT_POSTGRES:-5432}:${PORT_POSTGRES:-5432}"
     env_file:
       - .env
     volumes:
       - ./pg_data:/var/lib/postgresql/data
     command: -p $PORT_POSTGRES
   app:
-    build: app
-    restart: always
-    container_name: satisfactory_webapp
-    ports:
-      - $PORT_WEBAPP:$PORT_WEBAPP
-    depends_on:
-      - postgres
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: satisfactory_webapp_image
+    container_name: satisfactory_webapp_container
     env_file:
       - .env
+    restart: always
+    ports:
+      - "${PORT_WEBAPP:-8501}:${PORT_WEBAPP:-8501}"
+    depends_on:
+      - postgres
     volumes:
-      - ./app/static:/app/static
+      - ./static:/app/static
+      - ./logs:/app/logs
+    healthcheck:
+      test: "curl -f http://localhost:${PORT_WEBAPP:-8501}/ || exit 1"
+      interval: 5m
+      timeout: 10s
+      retries: 3

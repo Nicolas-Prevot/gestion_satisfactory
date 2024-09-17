@@ -122,8 +122,8 @@ def get_recipe_rows(recipe_soup):
     # Get all rows for recipe page
     try:
         crafting_table = recipe_soup.find_all(class_='wikitable')[0]
-    except:
-        raise Exception("Problem parsing wiki page soup.")
+    except Exception as e:
+        raise Exception("Problem parsing wiki page soup.") from e
 
     crafting_rows = crafting_table.find_all('tr')
 
@@ -185,7 +185,7 @@ def get_building_soup(building_URL: str):
     return building_soup
 
 
-def scrape_recipe_page(recipes_soup):
+def scrape_recipe_page(recipe_soup):
     """
     Return Coproduct Recipes list for given Wiki page Soup.
     """
@@ -200,7 +200,7 @@ def scrape_recipe_page(recipes_soup):
                "item_out_2":[],"rate_out_2":[]}
 
     # Select all non-header rows
-    select_rows = get_recipe_rows(recipes_soup)
+    select_rows = get_recipe_rows(recipe_soup)
 
     # Define function-internal lists
     temp_inputs = []
@@ -250,7 +250,6 @@ def scrape_recipe_page(recipes_soup):
 
             # Get building info
             recipe_building, url_building = get_building(select_rows[i].find_all('td')[building_index])
-            # print(recipe_building)
 
             # Get outputs for recipe, one index up from building
             outs, orts, out_urls_img = get_recipe_outputs(select_rows[i].find_all('td')[building_index+1])
@@ -323,27 +322,26 @@ def scrape_building_page(building_soup):
 
 
 def save_img(name, url, path):
-    r = requests.get(url, stream=True) #Get request on full_url
+    r = requests.get(url, stream=True)  # Get request on full_url
     path = f"{path}{name}.png"
-    if r.status_code == 200:                     #200 status code = OK
+    if r.status_code == 200:  # 200 status code = OK
         with open(path, 'wb') as f: 
             r.raw.decode_content = True
             shutil.copyfileobj(r.raw, f)
     return path
 
 
-def get_all_dfs(extensions_list: list, config, streamlit_display=False):
+def get_all_dfs(extensions_list: list, path_imgs, streamlit_display=False):
     if (streamlit_display):
         import streamlit as st
 
     # Get list of item name URLs, convert to full URLs for scraping.
     all_item_URLs = get_all_URLs_to_scrape(extensions_list)
-    print("\nall_item_URLs")
-    print(len(all_item_URLs), all_item_URLs)
 
     # Get Soup list from all item URLs.
     if (streamlit_display):
         st.write("Get Soup list from all item URLs")
+        st.write(all_item_URLs)
     all_recipe_soups = [get_recipe_soup(recipe_page) for recipe_page in sttqdm(all_item_URLs, streamlit_display=streamlit_display)]
 
     # Init dict for futur dataFrames
@@ -360,7 +358,11 @@ def get_all_dfs(extensions_list: list, config, streamlit_display=False):
     # Complete dicts from pages soup
     if (streamlit_display):
         st.write("Complete dicts from pages soup")
-    for recipe_soup in sttqdm(all_recipe_soups, streamlit_display=streamlit_display):
+    for item_url, recipe_soup in sttqdm(list(zip(all_item_URLs, all_recipe_soups)), streamlit_display=streamlit_display):
+        if not recipe_soup.contents:
+            if (streamlit_display):
+                st.error(f"No html class 'wikitable' in the page {item_url}. Item is ignored")
+            continue
         items, buildings, recipes = scrape_recipe_page(recipe_soup)
         for key in df_items:
             df_items[key] += items[key]
@@ -380,15 +382,16 @@ def get_all_dfs(extensions_list: list, config, streamlit_display=False):
     df_buildings.dropna(how='all', inplace=True, ignore_index=True)
     df_recipes.drop_duplicates(inplace=True, ignore_index=True)
 
-    print(df_items)
-    print(df_buildings)
-    print(df_recipes)
-
-    # Download images and change url with path saved
     if (streamlit_display):
-        st.write("Download images and change url with path saved")
+        st.write(df_items)
+        st.write(df_buildings)
+        st.write(df_recipes)
+
+    # Download items images and change url with path saved
+    if (streamlit_display):
+        st.write("Download items images and change url with path saved")
     for i, (name, url) in sttqdm(enumerate(zip(df_items.name, df_items.url_img)), total=len(df_items.name), streamlit_display=streamlit_display):
-        path_img = save_img(name, url, config.project.path_imgs)
+        path_img = save_img(name, url, path_imgs)
         df_items.url_img[i] = path_img
 
     # Collect soups from building urls
@@ -399,17 +402,19 @@ def get_all_dfs(extensions_list: list, config, streamlit_display=False):
         building_soup = get_building_soup(building_page)
         all_buildings_soups.append(building_soup)
 
-    # download images and change url with path saved
+    # download building images and change url with path saved
     if (streamlit_display):
-        st.write("Download images and change url with path saved")
+        st.write("Download building images and change url with path saved")
     for i, (building_name, building_soup) in sttqdm(enumerate(zip(df_buildings.name, all_buildings_soups)), total=len(df_buildings.name), streamlit_display=streamlit_display):
+        st.write(building_name, building_soup)
+        if not building_soup.contents:
+            if (streamlit_display):
+                st.error(f"Error while fetching the building '{building_name}'. Building is ignored")
+                st.write(building_name, building_soup)
+            continue
         base_power_use, url_img = scrape_building_page(building_soup)
-        path_img = save_img(building_name, url_img, config.project.path_imgs)
+        path_img = save_img(building_name, url_img, path_imgs)
         df_buildings.base_power_use[i] = base_power_use
         df_buildings.url_img[i] = path_img
-    
-    print(df_items)
-    print(df_buildings)
-    print(df_recipes)
 
     return df_items, df_buildings, df_recipes

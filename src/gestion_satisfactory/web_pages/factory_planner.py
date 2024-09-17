@@ -1,16 +1,14 @@
 import streamlit as st
-from st_aggrid import AgGrid, GridOptionsBuilder, JsCode,GridUpdateMode
-from streamlit_agraph import agraph
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 import pandas as pd
 import numpy as np
 import os
 from PIL import Image
 
-from pages.utils.load_df import get_df_from_tables
-
-from utils.connect_bdd import load_df, save_df, get_list_tables, delete_table
-from pages.utils.display import display_results_item, display_recipes_frame
+from gestion_satisfactory.utils.load_df import get_df_from_tables
+from gestion_satisfactory.utils.display import display_results_item, display_recipes_frame
+from gestion_satisfactory.utils.connect_bdd import load_df, save_df, get_list_tables, delete_table
 
 
 def display_name_to_table_name(display_name):
@@ -35,13 +33,16 @@ def cached_get_df_from_tables():
     return get_df_from_tables()
 
 
-if __name__ == "__main__":
-    st.set_page_config(
-        page_icon=Image.open(f"{os.path.realpath(os.path.dirname(__file__))}/logo.png"),
-        layout="wide",
-        initial_sidebar_state="auto",
-    )
+def create_page(title: str) -> None:
+    """
+    Create a streamlit page.
 
+    Parameters
+    ----------
+    title: str, optional
+        The title of the page.
+
+    """
     try:
         list_tables = get_list_tables()
         list_tables.remove("items")

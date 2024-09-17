@@ -3,6 +3,7 @@ from bs4 import SoupStrainer
 import requests
 import re
 
+
 def get_item_names_from_url(URL, id_tag='mw-pages'):
     """
     Returns a Soup of the Items page from the Satisfactory Wiki.
@@ -18,6 +19,7 @@ def get_item_names_from_url(URL, id_tag='mw-pages'):
     
     return items_soup
 
+
 def get_list_of_item_names(items_soup):
     """
     Returns list of URL extensions for all items in the game.
@@ -29,6 +31,7 @@ def get_list_of_item_names(items_soup):
     all_item_names = [i.a.get('href') for i in all_item_tags]
 
     return all_item_names
+
 
 def filter_item_names(items_URL_extensions, filter_string='/[a-zA-Z]{2}$|^/%'):
     """
@@ -73,6 +76,7 @@ def filter_item_names(items_URL_extensions, filter_string='/[a-zA-Z]{2}$|^/%'):
     filtered_items_URL_extensions = filtered_items_URL_extensions + whitelist
 
     return filtered_items_URL_extensions
+
 
 def get_all_item_URLs():
     """

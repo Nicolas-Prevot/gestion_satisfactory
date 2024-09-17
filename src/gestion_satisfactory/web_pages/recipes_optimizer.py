@@ -1,5 +1,4 @@
 import streamlit as st
-from st_aggrid import AgGrid, GridOptionsBuilder, JsCode,GridUpdateMode
 from streamlit_agraph import agraph
 
 import os
@@ -7,11 +6,11 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 
-from utils.optimize import get_items, get_recipes_vect, get_best_production
-from pages.utils.load_df import get_df_from_tables
-from pages.utils.grids import item_selector
-from pages.utils.graph import create_recipe_optimize
-from pages.utils.display import display_recipes_frame
+from gestion_satisfactory.utils.optimize import get_items, get_recipes_vect, get_best_production
+from gestion_satisfactory.utils.load_df import get_df_from_tables
+from gestion_satisfactory.utils.grids import item_selector
+from gestion_satisfactory.utils.graph import create_recipe_optimize
+from gestion_satisfactory.utils.display import display_recipes_frame
 
 list_item_type_1 = ['Raw_Quartz','Bauxite','Crude_Oil','Iron_Ore','Coal','Uranium','Sulfur','Nitrogen_Gas','Water','Caterium_Ore','Limestone','Copper_Ore']
 list_item_type_2 = ['Wood','Blue_Power_Slug','Plasma_Spitter_Remains','Purple_Power_Slug','Flower_Petals','Stinger_Remains','Yellow_Power_Slug','Mycelia','Hog_Remains','Hatcher_Remains','Leaves']
@@ -22,20 +21,30 @@ list_item_type_2_value = [1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.]
 def cached_get_df_from_tables():
     return get_df_from_tables()
 
-if __name__ == "__main__":
-    st.set_page_config(
-    page_icon=Image.open(f"{os.path.realpath(os.path.dirname(__file__))}/logo.png"),
-    layout="wide",
-    initial_sidebar_state="auto",)
 
+def create_page(title: str) -> None:
+    """
+    Create a streamlit page.
+
+    Parameters
+    ----------
+    title: str, optional
+        The title of the page.
+
+    """
+    title = "Optimize your production recipes"
+    st.write(
+        f"""<h1 style='text-align: center;'>
+        🌴🤖 <i>{title}</i> 🖥️🔋
+        </h1>""",
+        unsafe_allow_html=True,
+        )
 
     try:
         df_items, df_buildings, df_recipes = cached_get_df_from_tables()
     except:
         st.error("There is no database, go to 🛠️_Database_manager and 'Fetch data'")
         st.stop()
-
-    st.title("Here optimize your production recipes")
 
     with st.expander("Change parameters"):
         col1, col2 = st.columns(spec=2)
