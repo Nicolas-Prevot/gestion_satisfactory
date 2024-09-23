@@ -22,7 +22,7 @@ def create_page(title: str) -> None:
         </h1>""",
         unsafe_allow_html=True,
         )
-    st.link_button(label="Satisfactory wiki", url="https://satisfactory.fandom.com/wiki/Satisfactory_Wiki")
+    st.link_button(label="Satisfactory wiki", url="https://satisfactory.wiki.gg/wiki/Satisfactory_Wiki")
     if (st.button(label="Fetch data")):
         with st.status("Downloading data...", expanded=True) as status:
             main(streamlit_display=True)

@@ -6,6 +6,7 @@ import pandas as pd
 import shutil
 from tqdm import tqdm
 
+
 # For streamlit display
 class sttqdm:
     def __init__(self, iterable, title=None, total=-1, streamlit_display=False):
@@ -36,289 +37,6 @@ class sttqdm:
                 self.prog_bar.progress(current_prog)
         if (self.streamlit_display):
             self.prog_bar.empty()
-        
-        
-
-def get_recipe_name(table_td):
-    """
-    Return name of recipe from Soup.
-    """
-    return str(table_td.contents[0])
-
-def get_recipe_rate(string):
-    """
-    Return item input/output rate from string.
-    """
-    return float(re.match('[0-9]*[.]*[0-9]*', string).group(0))
-
-def get_input_output(table_td):
-    """
-    Return list of items and rates from given table.
-    """
-    items_list = []
-    rates_list = []
-    urls_img_list = []
-
-    while table_td:
-        try:
-            items_list.append(space_2_underscore(table_td.div.div.a.get('title')))
-            rates_list.append(get_recipe_rate(table_td.div.next_sibling.string))
-
-            url = table_td.div.div.a.img.get('data-src')
-            if url is None:
-                url = table_td.div.div.a.img.get('src')
-            url = url.split(".png")[0]+".png"
-            urls_img_list.append(url)
-        except:
-            break
-        table_td = table_td.next_sibling
-    return [items_list, rates_list, urls_img_list]
-
-def get_recipe_inputs(table_td):
-    """
-    Return list of all input names, list of all input rates.
-    """
-    return get_input_output(table_td)
-
-def get_recipe_outputs(table_td):
-    """
-    Return list of all output names, list of all output rates.
-    """
-    return get_input_output(table_td)
-
-def get_building(table_td):
-    """
-    Return the building recipe is made in.
-    """
-    try:
-        url = get_all_URLs_to_scrape([table_td.span.a.get('href')])[0]
-        name = space_2_underscore(table_td.span.a.get('title'))
-        return name, url
-    except:
-        return None, None
-
-def get_prereq(table_td):
-    """
-    Return what prerequisite exists for recipe unlock.
-    """
-    return str(table_td.span.text)
-
-def get_is_alternate(table_td):
-    """
-    Return if the recipe is an alternate recipe (locked by default).
-    """
-    return True if table_td.br else False
-
-def extract_product(extension: str):
-    """
-    Return full product name from URL extension.
-    """
-    return re.search('[a-zA-Z_-]+$', extension)[0]
-
-def get_recipe_rows(recipe_soup):
-    """
-    Return non-header rows from crafting table on the item's Wiki page soup.
-    """
-    # Get all rows for recipe page
-    try:
-        crafting_table = recipe_soup.find_all(class_='wikitable')[0]
-    except Exception as e:
-        raise Exception("Problem parsing wiki page soup.") from e
-
-    crafting_rows = crafting_table.find_all('tr')
-
-    # Select all non-header rows
-    non_header_rows = crafting_rows[1:]
-
-    return non_header_rows
-
-
-def underscore_2_space(string: str):
-    """
-    Return string with underscores replaced by spaces.
-    """
-    return re.sub('[_]', ' ', string)
-
-
-def space_2_underscore(string: str):
-    """
-    Return string with underscores replaced by spaces.
-    """
-    return re.sub(' ', '_', string)
-
-
-def get_all_URLs_to_scrape(extensions_list):
-    """
-    Return list of full item URLs for scraping.
-    """   
-    base_URL = 'https://satisfactory.fandom.com'
-
-    return [base_URL + extension for extension in extensions_list]
-    
-
-def get_recipe_soup(recipe_URL: str):
-    """
-    Return Soup of given URL.
-    """
-    # Get HTML of recipe page
-    recipe_page = requests.get(recipe_URL)
-    
-    # Only parse and soup-ify the recipes table
-    only_recipe_table = SoupStrainer(class_='wikitable')
-
-    recipe_soup = BeautifulSoup(recipe_page.content, 'html.parser', parse_only=only_recipe_table)
-
-    return recipe_soup
-
-
-def get_building_soup(building_URL: str):
-    """
-    Return Soup of given URL.
-    """
-    # Get HTML of recipe page
-    building_page = requests.get(building_URL)
-    
-    only_building_table = SoupStrainer('aside')
-
-    building_soup = BeautifulSoup(building_page.content, 'html.parser', parse_only=only_building_table)
-
-    return building_soup
-
-
-def scrape_recipe_page(recipe_soup):
-    """
-    Return Coproduct Recipes list for given Wiki page Soup.
-    """
-    items = {"name":[],"solid":[], "url_img":[]}
-    buildings = {"name":[], "base_power_use":[], "url_img":[]}
-    recipes = {"name":[], "alternate":[], "building":[],
-               "item_in_1":[],"rate_in_1":[],
-               "item_in_2":[],"rate_in_2":[],
-               "item_in_3":[],"rate_in_3":[],
-               "item_in_4":[],"rate_in_4":[],
-               "item_out_1":[],"rate_out_1":[],
-               "item_out_2":[],"rate_out_2":[]}
-
-    # Select all non-header rows
-    select_rows = get_recipe_rows(recipe_soup)
-
-    # Define function-internal lists
-    temp_inputs = []
-    temp_irates = []
-    temp_inputs_img = []
-    temp_outputs = []
-    temp_orates = []
-    temp_ouputs_img = []
-
-    # For each row in table (besides column names)
-    for i in range(len(select_rows)):
-
-        # Get first row's input item names and rates listed on HTML structure with 'class' attr
-        if select_rows[i].has_attr('class'):
-
-            # Get name for recipe, always index 0
-            recipe_name = get_recipe_name(select_rows[i].find_all('td')[0])
-
-            # Get if recipe is alt, always index 0
-            recipe_is_alt = get_is_alternate(select_rows[i].find_all('td')[0])
-
-            # Get primary row input values. always index 1+
-            inps, irts, in_urls_img = get_recipe_inputs(select_rows[i].find_all('td')[1])
-            temp_inputs = inps
-            temp_irates = irts
-            temp_inputs_img = in_urls_img
-
-            # Get proper index for building info location in row
-            if len(temp_inputs) < 2:
-                building_index = 2
-
-            else:
-                building_index = 3
-
-            # If exists, get first row's secondary inputs listed on HTML structure with no 'class' attr
-            try:
-                if not select_rows[i+1].has_attr('class'):
-
-                    # Append secondary row input values to primary ones
-                    inps, rts, in_urls_img = get_recipe_inputs(select_rows[i+1].find_all('td')[0])
-                    temp_inputs += inps
-                    temp_irates += rts
-                    temp_inputs_img += in_urls_img
-
-            except:
-                pass
-
-            # Get building info
-            recipe_building, url_building = get_building(select_rows[i].find_all('td')[building_index])
-
-            # Get outputs for recipe, one index up from building
-            outs, orts, out_urls_img = get_recipe_outputs(select_rows[i].find_all('td')[building_index+1])
-            temp_outputs = outs
-            temp_orates = orts
-            temp_ouputs_img = out_urls_img
-        
-        # If hit row with no primary values, skip
-        else:
-            continue
-
-        for item_name, url in zip(temp_inputs, temp_inputs_img):
-            if item_name not in items["name"]:
-                items["name"].append(item_name)
-                items["solid"].append(None)
-                items["url_img"].append(url)
-        
-        for item_name, url in zip(temp_outputs, temp_ouputs_img):
-            if item_name not in items["name"]:
-                items["name"].append(item_name)
-                items["solid"].append(None)
-                items["url_img"].append(url)
-        
-        if recipe_building not in buildings["name"]:
-            buildings["name"].append(recipe_building)
-            buildings["base_power_use"].append(None)
-            buildings["url_img"].append(url_building)
-
-        temp_inputs = temp_inputs + [None]*(4-len(temp_inputs))
-        temp_irates = temp_irates + [None]*(4-len(temp_irates))
-        temp_outputs = temp_outputs + [None]*(2-len(temp_outputs))
-        temp_orates = temp_orates + [None]*(2-len(temp_orates))
-        
-        recipes["name"].append(recipe_name)
-        recipes["alternate"].append(recipe_is_alt)
-        recipes["building"].append(recipe_building)
-        recipes["item_in_1"].append(temp_inputs[0])
-        recipes["rate_in_1"].append(temp_irates[0])
-        recipes["item_in_2"].append(temp_inputs[1])
-        recipes["rate_in_2"].append(temp_irates[1])
-        recipes["item_in_3"].append(temp_inputs[2])
-        recipes["rate_in_3"].append(temp_irates[2])
-        recipes["item_in_4"].append(temp_inputs[3])
-        recipes["rate_in_4"].append(temp_irates[3])
-        recipes["item_out_1"].append(temp_outputs[0])
-        recipes["rate_out_1"].append(temp_orates[0])
-        recipes["item_out_2"].append(temp_outputs[1])
-        recipes["rate_out_2"].append(temp_orates[1])
-
-    return items, buildings, recipes
-
-
-def scrape_building_page(building_soup):
-    img_soup = building_soup.find_all('img')[0]
-    url_img = img_soup.get("src")
-    url_img = url_img.split(".png")[0]+".png"
-
-    try:
-        def has_class(tag):
-            return tag.has_attr('data-source') and tag['data-source'] == "powerUsage"
-        power_soup = building_soup.find_all(has_class)[0]
-        base_power_use = power_soup.div.get_text()
-    except:
-        def has_class(tag):
-            return tag.has_attr('data-source') and tag['data-source'] == "powerGenerated"
-        power_soup = building_soup.find_all(has_class)[0]
-        base_power_use = "-" + power_soup.div.get_text()
-
-    return base_power_use, url_img
 
 
 def save_img(name, url, path):
@@ -331,90 +49,279 @@ def save_img(name, url, path):
     return path
 
 
-def get_all_dfs(extensions_list: list, path_imgs, streamlit_display=False):
-    if (streamlit_display):
-        import streamlit as st
+def normalize_text(text):
+    return ''.join(e for e in text if e.isalnum()).lower()
 
-    # Get list of item name URLs, convert to full URLs for scraping.
-    all_item_URLs = get_all_URLs_to_scrape(extensions_list)
 
-    # Get Soup list from all item URLs.
-    if (streamlit_display):
-        st.write("Get Soup list from all item URLs")
-        st.write(all_item_URLs)
-    all_recipe_soups = [get_recipe_soup(recipe_page) for recipe_page in sttqdm(all_item_URLs, streamlit_display=streamlit_display)]
+def parse_building_description(soup):
+    info = {
+        'image_path': None,
+        'unlocked_by': None,
+        'class_name': None,
+        'power_usage': None,
+        'overclockable': None,
+        'conveyor_inputs': 0,
+        'conveyor_outputs': 0,
+        'pipeline_inputs': 0,
+        'pipeline_outputs': 0,
+        'width': None,
+        'length': None,
+        'height': None,
+        'area': None,
+        'ingredients': {}
+    }
 
-    # Init dict for futur dataFrames
-    df_items = {"name":[],"solid":[], "url_img":[]}
-    df_buildings = {"name":[], "base_power_use":[], "url_img":[]}
-    df_recipes = {"name":[], "alternate":[], "building":[],
-               "item_in_1":[],"rate_in_1":[],
-               "item_in_2":[],"rate_in_2":[],
-               "item_in_3":[],"rate_in_3":[],
-               "item_in_4":[],"rate_in_4":[],
-               "item_out_1":[],"rate_out_1":[],
-               "item_out_2":[],"rate_out_2":[]}
+    label_mapping = {
+        'unlockedby': 'unlocked_by',
+        'classname': 'class_name',
+        'powerusage': 'power_usage',
+        'overclockable': 'overclockable',
+        'conveyorinputs': 'conveyor_inputs',
+        'conveyoroutputs': 'conveyor_outputs',
+        'pipelineinputs': 'pipeline_inputs',
+        'pipelineoutputs': 'pipeline_outputs',
+        'width': 'width',
+        'length': 'length',
+        'height': 'height',
+        'area': 'area'
+    }
 
-    # Complete dicts from pages soup
-    if (streamlit_display):
-        st.write("Complete dicts from pages soup")
-    for item_url, recipe_soup in sttqdm(list(zip(all_item_URLs, all_recipe_soups)), streamlit_display=streamlit_display):
-        if not recipe_soup.contents:
-            if (streamlit_display):
-                st.error(f"No html class 'wikitable' in the page {item_url}. Item is ignored")
+    numeric_keys = {
+        'power_usage',
+        'conveyor_inputs',
+        'conveyor_outputs',
+        'pipeline_inputs',
+        'pipeline_outputs',
+        'width',
+        'length',
+        'height',
+        'area'
+    }
+
+    # Extract image path
+    figure_tag = soup.find('figure', class_='pi-item pi-media pi-image')
+    if figure_tag:
+        img_tag = figure_tag.find('img')
+        if img_tag and 'src' in img_tag.attrs:
+            info['image_path'] = img_tag['src']
+
+    # Find the ingredients section
+    ingredients_section = None
+    for h2_tag in soup.find_all('h2'):
+        text = h2_tag.get_text(strip=True)
+        normalized_text = normalize_text(text)
+        if 'ingredients' in normalized_text:
+            ingredients_section = h2_tag
+            break
+    ingredients_parent_section = None
+    if ingredients_section:
+        ingredients_parent_section = ingredients_section.find_parent('section')
+
+    data_divs = soup.find_all('div', class_='pi-data')
+
+    for data_div in data_divs:
+        # Skip data_divs under the ingredients section
+        if ingredients_parent_section and ingredients_parent_section in data_div.parents:
             continue
-        items, buildings, recipes = scrape_recipe_page(recipe_soup)
-        for key in df_items:
-            df_items[key] += items[key]
-        for key in df_buildings:
-            df_buildings[key] += buildings[key]
-        for key in df_recipes:
-            df_recipes[key] += recipes[key]
+        label_tag = data_div.find('h3', class_='pi-data-label')
+        value_tag = data_div.find('div', class_='pi-data-value')
+        if label_tag and value_tag:
+            label = label_tag.get_text(separator=' ', strip=True)
+            value = value_tag.get_text(separator=' ', strip=True)
+            # Normalize label
+            label_norm = normalize_text(label)
+            # Map label to key
+            key = label_mapping.get(label_norm)
+            if key:
+                if key in numeric_keys:
+                    # Extract numeric part
+                    num_match = re.search(r'[\d.]+', value)
+                    if num_match:
+                        num_str = num_match.group()
+                        # Convert to int or float
+                        if '.' in num_str:
+                            num_value = float(num_str)
+                        else:
+                            num_value = int(num_str)
+                        info[key] = num_value
+                    else:
+                        info[key] = None  # No number found
+                else:
+                    info[key] = value
 
-    # Convert dicts to DataFrames 
-    df_items = pd.DataFrame.from_dict(df_items)
-    df_buildings = pd.DataFrame.from_dict(df_buildings)
-    df_recipes = pd.DataFrame.from_dict(df_recipes)
+    # Process ingredients
+    if ingredients_parent_section:
+        ingredient_items = ingredients_parent_section.find_all('div', class_='pi-data')
+        pattern = re.compile(r'(\d+)\s*×\s*(.*)')
+        for item in ingredient_items:
+            value_tag = item.find('div', class_='pi-data-value')
+            if value_tag:
+                text = value_tag.get_text(separator=' ', strip=True)
+                match = pattern.match(text)
+                if match:
+                    amount = int(match.group(1))
+                    ingredient = match.group(2).strip()
+                    info['ingredients'][ingredient] = amount
 
-    # Remove undesired rows
-    df_items.drop_duplicates(inplace=True, ignore_index=True)
-    df_buildings.drop_duplicates(inplace=True, ignore_index=True)
-    df_buildings.dropna(how='all', inplace=True, ignore_index=True)
-    df_recipes.drop_duplicates(inplace=True, ignore_index=True)
+    return info
 
-    if (streamlit_display):
-        st.write(df_items)
-        st.write(df_buildings)
-        st.write(df_recipes)
 
-    # Download items images and change url with path saved
-    if (streamlit_display):
-        st.write("Download items images and change url with path saved")
-    for i, (name, url) in sttqdm(enumerate(zip(df_items.name, df_items.url_img)), total=len(df_items.name), streamlit_display=streamlit_display):
-        path_img = save_img(name, url, path_imgs)
-        df_items.url_img[i] = path_img
+def parse_building_recipes(soup):
+    recipes = []
 
-    # Collect soups from building urls
-    all_buildings_soups = []
-    if (streamlit_display):
-        st.write("Collect soups from building urls")
-    for building_page in sttqdm(df_buildings.url_img, streamlit_display=streamlit_display):
-        building_soup = get_building_soup(building_page)
-        all_buildings_soups.append(building_soup)
+    # Get all rows except the header
+    rows = soup.find_all('tr')[1:]
 
-    # download building images and change url with path saved
-    if (streamlit_display):
-        st.write("Download building images and change url with path saved")
-    for i, (building_name, building_soup) in sttqdm(enumerate(zip(df_buildings.name, all_buildings_soups)), total=len(df_buildings.name), streamlit_display=streamlit_display):
-        st.write(building_name, building_soup)
-        if not building_soup.contents:
-            if (streamlit_display):
-                st.error(f"Error while fetching the building '{building_name}'. Building is ignored")
-                st.write(building_name, building_soup)
-            continue
-        base_power_use, url_img = scrape_building_page(building_soup)
-        path_img = save_img(building_name, url_img, path_imgs)
-        df_buildings.base_power_use[i] = base_power_use
-        df_buildings.url_img[i] = path_img
+    for row in rows:
+        cols = row.find_all('td')
+        if len(cols) < 5:
+            continue  # Skip rows that don't have enough columns
 
-    return df_items, df_buildings, df_recipes
+        # Extract recipe name
+        recipe_name = cols[0].get_text(strip=True)
+
+        # Extract is alternate
+        recipe_alternate = cols[0].find('span', class_='recipe-alternate') is not None
+
+        # Extract ingredients
+        ingredients = []
+        ingredients_div = cols[1].find('div', class_='recipe-items')
+        if ingredients_div:
+            ingredient_items = ingredients_div.find_all('div', class_='recipe-item')
+            for item in ingredient_items:
+                amount_tag = item.find('span', class_='item-amount')
+                name_tag = item.find('span', class_='item-name')
+                img_tag = item.find('a').find('img') if item.find('a') else None
+
+                amount_text = amount_tag.get_text(strip=True) if amount_tag else ''
+                amount = int(re.search(r'(\d+)', amount_text).group(1)) if amount_text else None
+                name = name_tag.get_text(strip=True) if name_tag else ''
+                img_path = img_tag['src'] if img_tag and 'src' in img_tag.attrs else None
+
+                ingredients.append({
+                    'name': name,
+                    'amount': amount,
+                    'image_path': img_path
+                })
+
+        # Extract duration and power consumption
+        duration_cell = cols[2]
+        duration_text = duration_cell.get_text(separator=' ', strip=True)
+        duration_match = re.search(r'(\d+\.?\d*)\s*sec', duration_text)
+        duration = float(duration_match.group(1)) if duration_match else None
+
+        # Initialize min and max consumption
+        min_consumption = None
+        max_consumption = None
+
+        # Check for power consumption range in the duration cell
+        consumption_match = re.search(r'(\d+(?:,\d+)*)\s*-\s*(\d+(?:,\d+)*)\s*MW', duration_text)
+        if consumption_match:
+            min_consumption_str = consumption_match.group(1).replace(',', '')
+            max_consumption_str = consumption_match.group(2).replace(',', '')
+            min_consumption = int(min_consumption_str)
+            max_consumption = int(max_consumption_str)
+
+        # Extract products
+        products = []
+        products_div = cols[3].find('div', class_='recipe-items')
+        if products_div:
+            product_items = products_div.find_all('div', class_='recipe-item')
+            for item in product_items:
+                amount_tag = item.find('span', class_='item-amount')
+                name_tag = item.find('span', class_='item-name')
+                img_tag = item.find('a').find('img') if item.find('a') else None
+
+                amount_text = amount_tag.get_text(strip=True) if amount_tag else ''
+                amount = int(re.search(r'(\d+)', amount_text).group(1)) if amount_text else None
+                name = name_tag.get_text(strip=True) if name_tag else ''
+                img_path = img_tag['src'] if img_tag and 'src' in img_tag.attrs else None
+
+                products.append({
+                    'name': name,
+                    'amount': amount,
+                    'image_path': img_path
+                })
+
+        # Extract "unlocked by" information
+        unlocked_by = cols[4].get_text(separator=' ', strip=True)
+
+        # Append the recipe data to the list
+        recipes.append({
+            'name': recipe_name,
+            'recipe_alternate': recipe_alternate,
+            'ingredients': ingredients,
+            'duration': duration,
+            'products': products,
+            'unlocked_by': unlocked_by,
+            'min_consumption': min_consumption,
+            'max_consumption': max_consumption,
+        })
+
+    return recipes
+
+
+def flatten_building_data(building_dict):
+    flat_data = {}
+    for name, data in building_dict.items():
+        flat_entry = data.copy()
+        # Flatten the ingredients dictionary
+        ingredients = flat_entry.pop('ingredients', {})
+        for i in range(1, 6):
+            ingredient_key = f'ingredient_{i}'
+            amount_key = f'amount_{i}'
+            if i <= len(ingredients):
+                ingredient_name = list(ingredients.keys())[i - 1]
+                ingredient_amount = ingredients[ingredient_name]
+                flat_entry[ingredient_key] = ingredient_name
+                flat_entry[amount_key] = ingredient_amount
+            else:
+                flat_entry[ingredient_key] = None
+                flat_entry[amount_key] = None
+        flat_entry['name'] = name  # Add the building name for merging
+        flat_data[name] = flat_entry
+    return flat_data
+
+
+def flatten_recipes(recipes_dict):
+    items_list = []
+    recipe_entries = []
+    for building_name, recipes in recipes_dict.items():
+        for idx, recipe in enumerate(recipes):
+            flat_recipe = {
+                'building_name': building_name,
+                'recipe_name': recipe.get('name'),
+                'recipe_alternate': recipe.get('recipe_alternate'),
+                'duration': recipe.get('duration'),
+                'unlocked_by': recipe.get('unlocked_by'),
+                'min_consumption': recipe.get('min_consumption'),
+                'max_consumption': recipe.get('max_consumption')
+            }
+            # Flatten ingredients
+            ingredients = recipe.get('ingredients', [])
+            for i in range(1, 5):  # Up to 4 ingredients
+                if i <= len(ingredients):
+                    ingredient = ingredients[i - 1]
+                    ingredient_name = ingredient.get('name')
+                    flat_recipe[f'ingredient_{i}'] = ingredient_name
+                    flat_recipe[f'amount_{i}'] = ingredient.get('amount')
+                    items_list.append({'name': ingredient_name,
+                                       'url': ingredient.get('image_path')})
+                else:
+                    flat_recipe[f'ingredient_{i}'] = None
+                    flat_recipe[f'amount_{i}'] = None
+            # Flatten products
+            products = recipe.get('products', [])
+            for i in range(1, 3):  # Up to 2 products
+                if i <= len(products):
+                    product = products[i - 1]
+                    product_name = product.get('name')
+                    flat_recipe[f'product_{i}'] = product_name
+                    flat_recipe[f'product_amount_{i}'] = product.get('amount')
+                    items_list.append({'name': product_name,
+                                       'url': product.get('image_path')})
+                else:
+                    flat_recipe[f'product_{i}'] = None
+                    flat_recipe[f'product_amount_{i}'] = None
+            recipe_entries.append(flat_recipe)
+    return recipe_entries, items_list

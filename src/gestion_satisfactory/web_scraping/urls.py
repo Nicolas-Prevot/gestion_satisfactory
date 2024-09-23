@@ -2,96 +2,112 @@ from bs4 import BeautifulSoup
 from bs4 import SoupStrainer
 import requests
 import re
+import pandas as pd
+
+from web_scraping.utils import parse_building_description, parse_building_recipes, flatten_building_data, flatten_recipes, sttqdm, save_img
 
 
-def get_item_names_from_url(URL, id_tag='mw-pages'):
-    """
-    Returns a Soup of the Items page from the Satisfactory Wiki.
-    """
-    # Navigate to source URL
-    items_page = requests.get(URL)
+def get_all_buildings_urls(url, streamlit_display=False):
+    if (streamlit_display):
+        import streamlit as st
 
-    # Setup Strainer for specific tag
-    only_item_names = SoupStrainer(id=id_tag)
+    data = []
 
-    # Extract html within the id_tag as Soup
-    items_soup = BeautifulSoup(items_page.content, 'html.parser', parse_only=only_item_names)
+    buildings_page = requests.get(url)
+    buildings_soup = BeautifulSoup(buildings_page.content, 'html.parser')
+
+    navbox_tables = buildings_soup.find('tbody')
+
+    for table in sttqdm(navbox_tables, total=len(navbox_tables), title="Scrapping the URLs of each building", streamlit_display=streamlit_display):
+        th = table.find('th', scope="row")
+        if not th:
+            continue
+        group_name = th.get_text(strip=True)
+
+        sub_tables = table.find('tbody')
+        if sub_tables:
+            for sub_table in sub_tables:
+                th = sub_table.find('th', scope="row")
+                if not th:
+                    continue
+                sub_group_name = th.get_text(strip=True)
+                links = sub_table.find_all('a')
+                for a in links:
+                    data.append({
+                        'group': group_name,
+                        'subgroup': sub_group_name,
+                        'name': a.get('title') if a.get('title') else a.get_text(strip=True),
+                        'url': a.get('href')
+                    })
+        else:
+            # No sub-tables, add links directly under the group
+            links = table.find_all('a')
+            for a in links:
+                data.append({
+                    'group': group_name,
+                    'subgroup': None,  # No subgroup in this case
+                    'name': a.get('title') if a.get('title') else a.get_text(strip=True),
+                    'url': a.get('href')
+                })
+    df = pd.DataFrame(data, columns=['group', 'subgroup', 'name', 'url'])
+    df.drop_duplicates(inplace=True)
+    df.reset_index(drop=True, inplace=True)
+
+    if (streamlit_display):
+        st.success(f"{len(df)} buildings successfully found")
+
+    return df
+
+
+def get_all_dfs_production(base_url, df_production_buildings, streamlit_display=False):
+    if (streamlit_display):
+        import streamlit as st
+
+    info_buildings={}
+    recipes_data = {}
+
+    for row in df_production_buildings.itertuples():
+        building_page = requests.get(base_url + row.url)
+        building_soup = BeautifulSoup(building_page.content, 'html.parser')
+
+        building_description = building_soup.find('aside')
+        info_building = parse_building_description(building_description)
+        info_buildings[row.name] = info_building
+
+        building_recipes = building_soup.find('table', class_="recipetable")
+        info_buidling_recipes = parse_building_recipes(building_recipes)
+        recipes_data[row.name] = info_buidling_recipes
+
+        if (streamlit_display):
+            st.success(f"Informations on '{row.name}' are correctly parsed")
     
-    return items_soup
+    # Flatten the building data
+    flattened_data = flatten_building_data(info_buildings)
+    # Convert flattened data to DataFrame
+    buildings_df_ = pd.DataFrame.from_dict(flattened_data, orient='index')
+    buildings_df = df_production_buildings.merge(buildings_df_, on='name', how='left')
+
+    # Flatten the recipes
+    flattened_recipes, items_list = flatten_recipes(recipes_data)
+    # Convert to DataFrame
+    recipes_df = pd.DataFrame(flattened_recipes)
+    items_df = pd.DataFrame(items_list)
+    items_df.drop_duplicates(inplace=True)
+    items_df.reset_index(drop=True, inplace=True)
+
+    return buildings_df, recipes_df, items_df
 
 
-def get_list_of_item_names(items_soup):
-    """
-    Returns list of URL extensions for all items in the game.
-    """
-    # Find all alphabetical listings for items
-    all_item_tags = items_soup.find_all('li')
-
-    # Extract link locations for all items
-    all_item_names = [i.a.get('href') for i in all_item_tags]
-
-    return all_item_names
-
-
-def filter_item_names(items_URL_extensions, filter_string='/[a-zA-Z]{2}$|^/%'):
-    """
-    Returns scraped URL extensions after filtering out non-crafting related items.
-    TODO: Have these items in a separate file in the future.
-    """
-
-    # List of URLs to explicitly exclude
-    blacklist = [
-                    '/wiki/Cup', 
-                    '/wiki/Vines', 
-                    '/wiki/Statue',
-                    '/wiki/HUB_Parts', 
-                    '/wiki/Hard_Drive',
-                    '/wiki/Somersloop', 
-                    '/wiki/FICSIT_Coupon', 
-                    '/wiki/Mercer_Sphere',
-                    '/wiki/Quantum_Computer',
-                    '/wiki/Superposition_Oscillator',
-                    '/wiki/%EC%B2%A0_%EC%A3%BC%EA%B4%B4',
-                    '/wiki/User:SignpostMarv/Draft/Hard_Drive',
-                    '/wiki/Alien_Carapace',
-                    '/wiki/Alien_Organs',
-                    '/wiki/Alien_Remains',
-
-                ]
-
-    # List of URLs that are not on the all_items_URL (All craftable fluids atm.)
-    whitelist = [
-                    '/wiki/Fuel',
-                    '/wiki/Turbofuel',
-                    '/wiki/Nitric_Acid',
-                    '/wiki/Nitrogen_Gas',
-                    '/wiki/Sulfuric_Acid',
-                    '/wiki/Liquid_Biofuel',
-                    '/wiki/Alumina_Solution',
-                    '/wiki/Heavy_Oil_Residue',
-                ]
-
-    filtered_items_URL_extensions = [item_name for item_name in items_URL_extensions if re.search(filter_string, item_name) is None]
-    filtered_items_URL_extensions = [item_name for item_name in filtered_items_URL_extensions if item_name not in blacklist]
-    filtered_items_URL_extensions = filtered_items_URL_extensions + whitelist
-
-    return filtered_items_URL_extensions
-
-
-def get_all_item_URLs():
-    """
-    Returns all available items' URL extensions available on the Satisfactory Wiki.
-    """
-    # Specify URL to fetch item names from
-    all_items_URL = 'https://satisfactory.gamepedia.com/Category:Items'
-
-    # Get soup of specified URL
-    items_page_soup = get_item_names_from_url(all_items_URL, 'mw-pages')
-
-    # Get list of item URL extensions from Soup
-    items_URL_extensions = get_list_of_item_names(items_page_soup)
-
-    # Filter item URLs list to exclude problematic instances
-    filtered_items_URL_extensions = filter_item_names(items_URL_extensions)
-
-    return filtered_items_URL_extensions
+def save_imgs(df, col_url, path_imgs, title, streamlit_display=False):
+    if (streamlit_display):
+        import streamlit as st
+    
+    df["path_img"] = None
+    for i, (name, url) in sttqdm(enumerate(zip(df.name, df[col_url])), title=f"Downloading {title} images", total=len(df.name), streamlit_display=streamlit_display):
+        if not pd.isna(url):
+            path_img = save_img(name, "https://satisfactory.wiki.gg" + url, path_imgs)
+            df.path_img[i] = path_img
+    if (streamlit_display):
+        st.success("Downloaded images and saved the paths successfully !")
+    
+    return df
