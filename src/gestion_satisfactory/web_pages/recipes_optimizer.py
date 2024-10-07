@@ -5,21 +5,119 @@ import os
 import pandas as pd
 import numpy as np
 from PIL import Image
+import re
 
-from gestion_satisfactory.utils.optimize import get_items, get_recipes_vect, get_best_production
+from gestion_satisfactory.utils.optimize import get_optimize_prod
 from gestion_satisfactory.utils.load_df import get_df_from_tables
 from gestion_satisfactory.utils.grids import item_selector
-from gestion_satisfactory.utils.graph import create_recipe_optimize
-from gestion_satisfactory.utils.display import display_recipes_frame
+from gestion_satisfactory.utils.graph import create_genealogy_graph
+from gestion_satisfactory.utils.display import display_recipes_frame, display_items_balance
 
-list_item_type_1 = ['Raw_Quartz','Bauxite','Crude_Oil','Iron_Ore','Coal','Uranium','Sulfur','Nitrogen_Gas','Water','Caterium_Ore','Limestone','Copper_Ore']
-list_item_type_2 = ['Wood','Blue_Power_Slug','Plasma_Spitter_Remains','Purple_Power_Slug','Flower_Petals','Stinger_Remains','Yellow_Power_Slug','Mycelia','Hog_Remains','Hatcher_Remains','Leaves']
-list_item_type_1_value = [2.,3.,0.5,1.,1.,10.,1.,2.,0.,2.,1.,1.]
-list_item_type_2_value = [1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.]
+
+raw_materials_1_ = {
+    'Limestone':1.,
+    'Iron Ore':1.,
+    'Copper Ore':1.,
+    'Coal':2.,
+    'Sulfur':2.,
+    'Raw Quartz':4.,
+    'Bauxite':8.,
+    'Caterium Ore':6.,
+    'Water':0.,
+    'Crude Oil':.5,
+    'Nitrogen Gas':6.,
+    'Uranium':12.,
+    'SAM':50.,
+    'Uranium Waste':10.,
+    'Plutonium Waste':10.,
+}
+
+raw_materials_2_ = {
+    'Mycelia':1.,
+    'Leaves':1.,
+    'Wood':1.,
+    'Blue Power Slug':1.,
+    'Purple Power Slug':1.,
+    'Yellow Power Slug':1.,
+    'Stinger Remains':1.,
+    'Hog Remains':1.,
+    'Hatcher Remains':1.,
+    'Spitter Remains':1.,
+    'FICSMAS Tree Branch':1.,
+    'FICSMAS Bow':1.,
+    'Actual Snow':1.,
+    'Candy Cane':1.,
+}
+
+raw_materials_limit_1_ = {
+    'Limestone':5000.,
+    'Iron Ore':5000.,
+    'Copper Ore':5000.,
+    'Coal':5000.,
+    'Sulfur':5000.,
+    'Raw Quartz':4000.,
+    'Bauxite':2000.,
+    'Caterium Ore':1000.,
+    'Water':10000.,
+    'Crude Oil':8000.,
+    'Nitrogen Gas':1000.,
+    'Uranium':1000.,
+    'SAM':500.,
+    'Uranium Waste':10.,
+    'Plutonium Waste':10.,
+}
+
+raw_materials_limit_2_ = {
+    'Mycelia':200.,
+    'Leaves':200.,
+    'Wood':200.,
+    'Blue Power Slug':200.,
+    'Purple Power Slug':200.,
+    'Yellow Power Slug':200.,
+    'Stinger Remains':200.,
+    'Hog Remains':200.,
+    'Hatcher Remains':200.,
+    'Spitter Remains':200.,
+    'FICSMAS Tree Branch':200.,
+    'FICSMAS Bow':200.,
+    'Actual Snow':200.,
+    'Candy Cane':200.,
+}
 
 @st.cache_data
 def cached_get_df_from_tables():
     return get_df_from_tables()
+
+
+def extract_tier(unlocked_by):
+    if pd.isnull(unlocked_by) or unlocked_by == '':
+        return 0  # Default tier 0 for items without 'unlocked_by'
+    match = re.search(r'Tier (\d+)', unlocked_by)
+    if match:
+        return int(match.group(1))
+    else:
+        return 0
+
+
+def remove_uncraftable_rows(df_recipes, raw_materials_1_, raw_materials_2_, raw_materials_limit_1_, raw_materials_limit_2_):
+    ingredients = set(df_recipes[[f'ingredient_{k}' for k in range(1,5)]].values.flatten()) - set([np.nan, None])
+
+    raw_materials_1 = {item: value for item, value in raw_materials_1_.items() if item in ingredients}
+    raw_materials_limit_1 = {item: value for item, value in raw_materials_limit_1_.items() if item in ingredients}
+    raw_materials_2 = {item: value for item, value in raw_materials_2_.items() if item in ingredients}
+    raw_materials_limit_2 = {item: value for item, value in raw_materials_limit_2_.items() if item in ingredients}
+
+    products = set(df_recipes[[f'product_{k}' for k in range(1,3)]].values.flatten()) - set([np.nan, None])
+    items_uncraftable = (ingredients - products) - (set(raw_materials_1) | set(raw_materials_2))
+
+    def ingredients_available(recipe_row):
+        ingredients = recipe_row[[f'ingredient_{k}' for k in range(1, 5)]].values
+        ingredients = [ing for ing in ingredients if pd.notnull(ing)]
+        return all(ing not in items_uncraftable for ing in ingredients)
+    
+    df_recipes = df_recipes[df_recipes.apply(ingredients_available, axis=1)].copy()
+
+    return raw_materials_1, raw_materials_limit_1, raw_materials_2, raw_materials_limit_2, df_recipes, items_uncraftable
 
 
 def create_page(title: str) -> None:
@@ -41,89 +139,114 @@ def create_page(title: str) -> None:
         )
 
     try:
-        df_items, df_buildings, df_recipes = cached_get_df_from_tables()
+        df_items, df_buildings, df_recipes_ = cached_get_df_from_tables()
     except:
         st.error("There is no database, go to 🛠️_Database_manager and 'Fetch data'")
         st.stop()
 
-    with st.expander("Change parameters"):
+    df_recipes_['tier'] = df_recipes_['unlocked_by'].apply(extract_tier)
+    df_buildings['tier'] = df_buildings['unlocked_by'].apply(extract_tier)
+
+    product_columns = [f'product_{i}' for i in range(1, 3)]
+    condition = ~(
+        (df_recipes_['building_name'] == 'Packager') &
+        (df_recipes_[product_columns].eq('Empty Canister').any(axis=1))
+    )
+    df_recipes_ = df_recipes_[condition]
+
+    max_tier = st.selectbox(
+        "Select the maximum technology tier to include:",
+        [f"Tier {i}" for i in range(10)],
+        index = 9,
+    )
+    max_tier_num = int(re.search(r'\d+', max_tier).group())
+
+    df_recipes = df_recipes_[df_recipes_['tier'] <= max_tier_num].copy()
+
+    buildings_unreachable = list(df_buildings[df_buildings['tier'] > max_tier_num]["name"])
+
+    df_recipes = df_recipes[~df_recipes['building_name'].isin(buildings_unreachable)]
+
+    # Remove uncraftable recipes
+    raw_materials_1, raw_materials_limit_1, raw_materials_2, raw_materials_limit_2, df_recipes, items_uncraftable = remove_uncraftable_rows(df_recipes, raw_materials_1_, raw_materials_2_, raw_materials_limit_1_, raw_materials_limit_2_)
+    while len(items_uncraftable) > 0:
+        raw_materials_1, raw_materials_limit_1, raw_materials_2, raw_materials_limit_2, df_recipes, items_uncraftable = remove_uncraftable_rows(df_recipes, raw_materials_1, raw_materials_2, raw_materials_limit_1, raw_materials_limit_2)
+
+
+    with st.expander("Change importance / weight on raw items"):
         col1, col2 = st.columns(spec=2)
         with col1:
-            
-            for i, (item, nb) in enumerate(zip(list_item_type_1, list_item_type_1_value)):
+            for i, item in enumerate(raw_materials_1):
                 col1_1, col1_2 = st.columns(spec=2)
                 with col1_1:
-                    src_img = df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]
+                    src_img = df_items[df_items["name"] == item]["web_img"].tolist()[0]
                     st.markdown(f'<img src="{src_img}" width=40px>   {item}', unsafe_allow_html=True)
                 with col1_2:
-                    list_item_type_1_value[i] = st.number_input("", key=f"input1_{i}", min_value=0., value=nb, label_visibility= "collapsed")
-
+                    raw_materials_1[item] = st.slider("", key=f"input1_{i}", min_value=0., max_value=50., value=float(raw_materials_1[item]), label_visibility= "collapsed")
         with col2:
-            for i, (item, nb) in enumerate(zip(list_item_type_2, list_item_type_2_value)):
+            for i, item in enumerate(raw_materials_2):
                 col1_1, col1_2 = st.columns(spec=2)
                 with col1_1:
-                    src_img = df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]
+                    src_img = df_items[df_items["name"] == item]["web_img"].tolist()[0]
                     st.markdown(f'<img src="{src_img}" width=40px>   {item}', unsafe_allow_html=True)
                 with col1_2:
-                    list_item_type_2_value[i] = st.number_input("", key=f"input2_{i}", min_value=0., value=nb, label_visibility= "collapsed")
-        
-
-    #col1, col2 = st.columns(spec=[1,3])
-
-    items, items_raw = get_items(df_recipes, df_items)
-    R, Rp, recipe_names = get_recipes_vect(df_recipes, items, items_raw)
+                    raw_materials_2[item] = st.slider("", key=f"input2_{i}", min_value=0., max_value=100., value=float(raw_materials_2[item]), label_visibility= "collapsed")
+    
+    with st.expander("Change limit on raw items"):
+        col1, col2 = st.columns(spec=2)
+        with col1:
+            for i, item in enumerate(raw_materials_limit_1):
+                col1_1, col1_2 = st.columns(spec=2)
+                with col1_1:
+                    src_img = df_items[df_items["name"] == item]["web_img"].tolist()[0]
+                    st.markdown(f'<img src="{src_img}" width=40px>   {item}', unsafe_allow_html=True)
+                with col1_2:
+                    raw_materials_limit_1[item] = st.slider("", key=f"input_limit_1_{i}", min_value=0, step=1, max_value=10000, value=int(raw_materials_limit_1[item]), label_visibility= "collapsed")
+        with col2:
+            for i, item in enumerate(raw_materials_limit_2):
+                col1_1, col1_2 = st.columns(spec=2)
+                with col1_1:
+                    src_img = df_items[df_items["name"] == item]["web_img"].tolist()[0]
+                    st.markdown(f'<img src="{src_img}" width=40px>   {item}', unsafe_allow_html=True)
+                with col1_2:
+                    raw_materials_limit_2[item] = st.slider("", key=f"input_limit_2_{i}", min_value=0, step=1, max_value=1000, value=int(raw_materials_limit_2[item]), label_visibility= "collapsed")
+    
+    raw_items = list(raw_materials_1)+list(raw_materials_2)
+    not_raw_items = (set(df_recipes[[f'ingredient_{k}' for k in range(1,5)]].values.flatten()) | 
+                     set(df_recipes[[f'product_{k}' for k in range(1,3)]].values.flatten())
+                    ) - set([np.nan, None])
+    not_raw_items -= set(raw_items)
+    not_raw_items = list(not_raw_items)
 
     with st.sidebar:
-        filtered_list = [item for item in items if "Packaged" not in item]
-        df_items_prod = df_items[df_items["name"].isin(filtered_list)]
-        item_to_optim_prod = item_selector(df_items_prod)
-    
+        df_not_raw_items = df_items[df_items["name"].isin(not_raw_items)]
+        item_to_optim_prod = item_selector(df_not_raw_items)
+
         items_to_produce = []
         quantities = []
-        for e in item_to_optim_prod["selected_rows"]:
-            items_to_produce.append(e['name'])
-            quantities.append(st.number_input(f"Desired number of {e['name']} :", min_value=0, step=1, value=100))
+        if item_to_optim_prod["selected_rows"] is not None:
+            for e in item_to_optim_prod["selected_rows"].itertuples():
+                items_to_produce.append(e.name)
+                quantities.append(st.slider(f"Desired number of {e.name} :", min_value=0, step=1, value=30))
         
-
-    weight_raw_items_dict = {item:nb for item,nb in zip(list_item_type_1+list_item_type_2,list_item_type_1_value+list_item_type_2_value)}
+    weights_raw_items_dict = raw_materials_1 | {key: value * 1000 for key, value in raw_materials_2.items()}
+    limits_raw_items_dict = raw_materials_limit_1 | raw_materials_limit_2
+    selected_products = dict(zip(items_to_produce, quantities))
     
-    if len(item_to_optim_prod["selected_rows"]) >= 1:
+    if item_to_optim_prod["selected_rows"] is not None:
+        recipe_vars, recipe_var_to_name, status = get_optimize_prod(df_recipes, raw_items, weights_raw_items_dict, limits_raw_items_dict, not_raw_items, selected_products)
 
-        Lmbda_soln, status_solution = get_best_production(items_to_produce, items, items_raw, R, Rp, recipe_names, weight_raw_items_dict, quantities)
-
-        st.write(status_solution)
+        st.write(status)
 
         tab1, tab2, tab3 = st.tabs(["Recipes", "Materials", "Graph"])
 
         with tab1:
-            recipe_names_kept = []
-            nb_buildings = []
-            for nb in np.where(Lmbda_soln > 1e-10)[0]:
-                nb_buildings.append(Lmbda_soln[nb])
-                recipe_names_kept.append(recipe_names[nb])
-
-            display_recipes_frame(df_recipes, df_items, df_buildings, recipe_names_kept, nb_buildings, [1]*len(recipe_names))   
+            display_recipes_frame(df_recipes, df_items, df_buildings, recipe_vars, recipe_var_to_name)   
         
         with tab2:
-            sol_Lmbda = Lmbda_soln
+            display_items_balance(df_recipes, df_items, raw_items, not_raw_items, recipe_vars, recipe_var_to_name)
 
-            sol_Lmbda[np.where(sol_Lmbda < 1e-10)] = 0
-
-            Rp_final = np.sum([sol_Lmbda[j]*Rp[j] for j in range(0, len(recipe_names))], axis=0)
-
-            for i,nb in enumerate(Rp_final):
-                if nb == 0:
-                    continue
-                st.write(nb, items_raw[i])
-
-            st.write("---------------------")
-            R_final = np.sum([sol_Lmbda[j]*R[j] for j in range(0, len(recipe_names))], axis=0)
-
-            for i,nb in enumerate(R_final):
-                if nb == 0:
-                    continue
-                st.write(nb, items[i])
 
         with tab3:
-            nodes, edges, config = create_recipe_optimize(df_items, df_buildings, df_recipes, recipe_names, Lmbda_soln)
+            nodes, edges, config = create_genealogy_graph(df_recipes, df_items, df_buildings, recipe_vars, recipe_var_to_name)
             return_value = agraph(nodes=nodes, edges=edges, config=config)

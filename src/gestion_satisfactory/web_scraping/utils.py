@@ -304,12 +304,12 @@ def flatten_recipes(recipes_dict):
                     ingredient = ingredients[i - 1]
                     ingredient_name = ingredient.get('name')
                     flat_recipe[f'ingredient_{i}'] = ingredient_name
-                    flat_recipe[f'amount_{i}'] = ingredient.get('amount')
+                    flat_recipe[f'ingredient_amount_{i}'] = ingredient.get('amount')
                     items_list.append({'name': ingredient_name,
                                        'url': ingredient.get('image_path')})
                 else:
                     flat_recipe[f'ingredient_{i}'] = None
-                    flat_recipe[f'amount_{i}'] = None
+                    flat_recipe[f'ingredient_amount_{i}'] = None
             # Flatten products
             products = recipe.get('products', [])
             for i in range(1, 3):  # Up to 2 products

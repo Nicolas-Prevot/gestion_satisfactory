@@ -31,7 +31,7 @@ def item_selector(df_items):
                                     theme="streamlit",
                                     key='Optimization',
                                     fit_columns_on_grid_load=True,
-                                    height=600,
+                                    height=400,
                                     gridOptions=grid_options,
                                     allow_unsafe_jscode=True,
                                     reload_data=False,
