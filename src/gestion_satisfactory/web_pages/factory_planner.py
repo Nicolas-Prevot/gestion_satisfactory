@@ -9,6 +9,7 @@ from PIL import Image
 from gestion_satisfactory.utils.load_df import get_df_from_tables
 from gestion_satisfactory.utils.display import display_results_item, display_recipes_frame
 from gestion_satisfactory.utils.connect_bdd import load_df, save_df, get_list_tables, delete_table
+from gestion_satisfactory.utils.update_bdd_from_web import update_postgres_bdd
 
 
 def display_name_to_table_name(display_name):
@@ -49,8 +50,8 @@ def create_page(title: str) -> None:
         list_tables.remove("buildings")
         list_tables.remove("recipes")
     except:
-        st.error("There is no database, go to 🛠️_Database_manager and 'Fetch data'")
-        st.stop()
+        update_postgres_bdd(streamlit_display=True)
+        st.rerun()
 
     dict_display_table = {table_name_to_display_name(name):name for name in list_tables}
 
@@ -97,11 +98,28 @@ def create_page(title: str) -> None:
         factory_planner_selected_display = st.selectbox(label="Select your party", options=list(dict_display_table.keys()))
     
     if factory_planner_selected_display is None:
-        st.title("You need to create a party (see the sidebar)")
+        st.markdown(
+            """
+            <h2 style='text-align: center; color: #FF4B4B;'>
+                ⚠️ No Factory Selected!
+            </h2>
+            <p style='text-align: center; font-size: 18px;'>
+                Please create or select a factory from the sidebar.
+            </p>
+            """,
+            unsafe_allow_html=True,
+        )
     else:
         factory_planner_selected = dict_display_table[factory_planner_selected_display]
 
-        st.title(f"Welcome in the world of {factory_planner_selected_display}")
+        st.markdown(
+            f"""
+            <h1 style='text-align: center;'>
+                🏭 Welcome to Your Factory: <i>{factory_planner_selected_display}</i>
+            </h1>
+            """,
+            unsafe_allow_html=True,
+        )
 
         df_factory_planner = load_df(factory_planner_selected)
         df_items, df_buildings, df_recipes = cached_get_df_from_tables()

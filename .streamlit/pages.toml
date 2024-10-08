@@ -1,14 +1,9 @@
 [[pages]]
 path = "gestion_satisfactory/pages/recipes_optimizer.py"
 name = "Recipes Optimizer"
-icon = "bi bi-robot"
+icon = "bi bi-gear-wide-connected"
 
 [[pages]]
 path = "gestion_satisfactory/pages/factory_planner.py"
 name = "Factory Planner"
-icon = "bi bi-book"
-
-[[pages]]
-path = "gestion_satisfactory/pages/database_manager.py"
-name = "Database Manager"
-icon = "bi bi-book"
+icon = "bi bi-building"

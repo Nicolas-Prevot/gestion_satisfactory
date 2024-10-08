@@ -10,7 +10,7 @@ from gestion_satisfactory.utils.load_pages_config import (
     footer_streamlit_style,
     load_pages_config,
 )
-from gestion_satisfactory.web_pages import database_manager, factory_planner, recipes_optimizer
+from gestion_satisfactory.web_pages import recipes_optimizer, factory_planner
 
 
 # Set up logging
@@ -64,9 +64,6 @@ def main():
 
     if selected == v_menu[1]:
         factory_planner.create_page(title=selected)
-    
-    if selected == v_menu[2]:
-        database_manager.create_page(title=selected)
 
 
 if __name__ == "__main__":

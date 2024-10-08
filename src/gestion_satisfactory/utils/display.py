@@ -1,4 +1,5 @@
 import re
+import math
 import streamlit as st
 
 MD_LEFT_ALIGNED = ":-"
@@ -49,7 +50,7 @@ def get_row_text(infos):
         |{infos["nb_building"]:.2f}|\n'
 
 
-def display_recipes_frame(df_recipes, df_items, df_buildings, recipe_vars, recipe_var_to_name):
+def display_recipes_frame(df_recipes, df_items, df_buildings, recipe_vars, recipe_var_to_name, THRESHOLD = 1e-4):
 
     title_line = f'|Recipe name|Alt.|Out 1|Out 2|Buidling|In 1|In 2|In 3|In 4|<span style="color:{OC_COLOR}">OC</span>|<span style="color:{NB_BUILDING_COLOR}">Nb Building</span>|'
     setup_line = f"|{MD_LEFT_ALIGNED}|{MD_CENTER_ALIGNED}|{MD_LEFT_ALIGNED}|{MD_LEFT_ALIGNED}|{MD_CENTER_ALIGNED}|{MD_LEFT_ALIGNED}|{MD_LEFT_ALIGNED}|{MD_LEFT_ALIGNED}|{MD_LEFT_ALIGNED}|{MD_CENTER_ALIGNED}|{MD_CENTER_ALIGNED}|"
@@ -57,7 +58,7 @@ def display_recipes_frame(df_recipes, df_items, df_buildings, recipe_vars, recip
     markdown_text = title_line+'\n'+setup_line+'\n'
 
     for var_name, amount in recipe_vars.items():
-        if amount < 1e-10:
+        if amount < THRESHOLD:
             continue
         recipe_name = recipe_var_to_name[var_name]
         infos_row = {
@@ -116,11 +117,34 @@ def display_items_in_columns(df_items, items_dict, title):
         st.write(f"No {title.lower()} to display.")
 
 
-def display_items_balance(df_recipes, df_items, raw_items, not_raw_items, recipe_vars, recipe_var_to_name):
+def display_buildings_in_columns(df_buildings, building_counts, title):
+    st.write(f"### {title}")
+    st.info(
+        "Note: The number of buildings required is calculated by rounding up the required amount for each recipe individually and summing them up. This ensures that each recipe has the necessary full buildings allocated."
+    )
+    if building_counts:
+        buildings = list(building_counts.items())
+        num_cols = 3
+        cols = st.columns(num_cols)
+        for idx, (building, count) in enumerate(buildings):
+            col = cols[idx % num_cols]
+            src_img = df_buildings[df_buildings["name"] == building]["web_img"].tolist()[0]
+            with col:
+                st.markdown(
+                    f'<div style="text-align: center;">'
+                    f'<img src="{src_img}" width="40px"><br>'
+                    f'{building}: {count}'
+                    f'</div>',
+                    unsafe_allow_html=True
+                )
+    else:
+        st.write(f"No {title.lower()} to display.")
+
+
+def display_items_balance(df_recipes, df_items, df_buildings, raw_items, not_raw_items, recipe_vars, recipe_var_to_name, THRESHOLD = 1e-4):
     all_items = raw_items + not_raw_items
     items_output = dict.fromkeys(all_items, 0)
-
-    THRESHOLD = 1e-2
+    building_counts = {}
 
     for var_name, amount in recipe_vars.items():
         if amount < THRESHOLD:
@@ -129,6 +153,12 @@ def display_items_balance(df_recipes, df_items, raw_items, not_raw_items, recipe
         recipe_name = recipe_var_to_name[var_name]
         idx = df_recipes[df_recipes["recipe_name"] == recipe_name].index[0]
         duration = df_recipes.at[idx, 'duration']
+
+        building_name = df_recipes.at[idx, 'building_name']
+        if building_name not in building_counts:
+            building_counts[building_name] = 0
+        building_counts[building_name] += math.ceil(amount)
+
         for item in all_items:
             net_prod = (
                 sum(
@@ -150,19 +180,11 @@ def display_items_balance(df_recipes, df_items, raw_items, not_raw_items, recipe
     raw_items_output = {item: value for item, value in items_output.items() if item in raw_items}
     not_raw_items_output = {item: value for item, value in items_output.items() if item in not_raw_items}
             
-    display_items_in_columns(df_items, raw_items_output, "Raw Items Balance")
+    display_items_in_columns(df_items, raw_items_output, "Consumption of raw ressources")
     st.write("---")
-    display_items_in_columns(df_items, not_raw_items_output, "Not Raw Items Balance")
-
-    """for item, value in raw_items_output.items():
-        if value != 0:
-            st.write(item, value)
-
-    st.write("---------------------")
-
-    for item, value in not_raw_items_output.items():
-        if value != 0:
-            st.write(item, value) """
+    display_items_in_columns(df_items, not_raw_items_output, "Items production")
+    st.write("---")
+    display_buildings_in_columns(df_buildings, building_counts, "Buildings Needed")
 
 
 def display_results_item(df_factory_planner, df_items, display_in_expander=False):

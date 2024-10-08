@@ -12,7 +12,7 @@ from gestion_satisfactory.utils.load_df import get_df_from_tables
 from gestion_satisfactory.utils.grids import item_selector
 from gestion_satisfactory.utils.graph import create_genealogy_graph
 from gestion_satisfactory.utils.display import display_recipes_frame, display_items_balance
-
+from gestion_satisfactory.utils.update_bdd_from_web import update_postgres_bdd
 
 raw_materials_1_ = {
     'Limestone':1.,
@@ -133,7 +133,7 @@ def create_page(title: str) -> None:
     title = "Optimize your production recipes"
     st.write(
         f"""<h1 style='text-align: center;'>
-        🌴🤖 <i>{title}</i> 🖥️🔋
+        ⚙️🏭 <i>{title}</i> 📈🔧
         </h1>""",
         unsafe_allow_html=True,
         )
@@ -141,8 +141,8 @@ def create_page(title: str) -> None:
     try:
         df_items, df_buildings, df_recipes_ = cached_get_df_from_tables()
     except:
-        st.error("There is no database, go to 🛠️_Database_manager and 'Fetch data'")
-        st.stop()
+        update_postgres_bdd(streamlit_display=True)
+        st.rerun()
 
     df_recipes_['tier'] = df_recipes_['unlocked_by'].apply(extract_tier)
     df_buildings['tier'] = df_buildings['unlocked_by'].apply(extract_tier)
@@ -236,17 +236,22 @@ def create_page(title: str) -> None:
     if item_to_optim_prod["selected_rows"] is not None:
         recipe_vars, recipe_var_to_name, status = get_optimize_prod(df_recipes, raw_items, weights_raw_items_dict, limits_raw_items_dict, not_raw_items, selected_products)
 
-        st.write(status)
+        if status == "Optimal":
+            st.success("Optimal solution found!")
+        elif status == "Infeasible":
+            st.warning(f"Request Infeasible. Try reducing the expected amount of outputs or increase the limits on raw ressources")
+        else:
+            st.error(f"Issue during optimization : '{status}'")
 
         tab1, tab2, tab3 = st.tabs(["Recipes", "Materials", "Graph"])
 
         with tab1:
-            display_recipes_frame(df_recipes, df_items, df_buildings, recipe_vars, recipe_var_to_name)   
+            display_recipes_frame(df_recipes, df_items, df_buildings, recipe_vars, recipe_var_to_name, 1e-4)   
         
         with tab2:
-            display_items_balance(df_recipes, df_items, raw_items, not_raw_items, recipe_vars, recipe_var_to_name)
+            display_items_balance(df_recipes, df_items, df_buildings, raw_items, not_raw_items, recipe_vars, recipe_var_to_name, 1e-4)
 
 
         with tab3:
-            nodes, edges, config = create_genealogy_graph(df_recipes, df_items, df_buildings, recipe_vars, recipe_var_to_name)
+            nodes, edges, config = create_genealogy_graph(df_recipes, df_items, df_buildings, recipe_vars, recipe_var_to_name, 1e-4)
             return_value = agraph(nodes=nodes, edges=edges, config=config)

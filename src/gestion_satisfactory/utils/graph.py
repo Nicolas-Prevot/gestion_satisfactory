@@ -3,14 +3,13 @@ import numpy as np
 import streamlit as st
 
 
-def create_genealogy_graph(df_recipes, df_items, df_buildings, recipe_vars, recipe_var_to_name):
-    config = Config(width=1000,
+def create_genealogy_graph(df_recipes, df_items, df_buildings, recipe_vars, recipe_var_to_name, THRESHOLD = 1e-4):
+    config = Config(width=9000,
                     height=650,
                     directed=True,
                     physics=True,
                     hierarchical=False
                     )
-    THRESHOLD = 1e-10
     nodes = []
     edges = []
     items = []
