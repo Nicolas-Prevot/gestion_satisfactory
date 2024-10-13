@@ -1,19 +1,10 @@
 services:
-  postgres:
-    image: postgres:16
-    container_name: satisfactory_postgres
-    restart: always
-    ports:
-      - "${PORT_POSTGRES:-5432}:${PORT_POSTGRES:-5432}"
-    env_file:
-      - .env
-    volumes:
-      - ./pg_data:/var/lib/postgresql/data
-    command: -p $PORT_POSTGRES
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        POSTGRES_SUPPORT: false
     image: satisfactory_webapp_image
     container_name: satisfactory_webapp_container
     env_file:
@@ -21,11 +12,10 @@ services:
     restart: always
     ports:
       - "${PORT_WEBAPP:-8501}:${PORT_WEBAPP:-8501}"
-    depends_on:
-      - postgres
     volumes:
       - ./static:/app/static
       - ./logs:/app/logs
+      - ./data/sqlite:/app/data/sqlite
     healthcheck:
       test: "curl -f http://localhost:${PORT_WEBAPP:-8501}/ || exit 1"
       interval: 5m

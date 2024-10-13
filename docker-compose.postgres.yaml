@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: satisfactory_postgres
+    restart: always
+    ports:
+      - "${PORT_POSTGRES:-5432}:${PORT_POSTGRES:-5432}"
+    env_file:
+      - .env
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    command: -p $PORT_POSTGRES
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        POSTGRES_SUPPORT: true
+    depends_on:
+      - postgres
+

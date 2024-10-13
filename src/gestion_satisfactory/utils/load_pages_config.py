@@ -1,5 +1,4 @@
 from typing import Text
-
 import requests
 import streamlit as st
 import toml
@@ -127,7 +126,7 @@ def display_sidebar_header(display_links: bool = False) -> None:
     """
     with st.sidebar:
         # Logo
-        st.sidebar.image(
+        st.image(
             "conf/****.png", use_column_width=True
         )
 
