@@ -25,8 +25,8 @@ def table_name_to_display_name(table_name):
     return display_name
 
 
-df_factory_planner_columns = ["area", "factory", "line", "building", "nb_building", "power_usage", "rate/overclock", "recipe",
-    "item_out_1", "rate_out_1", "item_out_2", "rate_out_2", "item_in_1", "rate_in_1", "item_in_2", "rate_in_2", "item_in_3", "rate_in_3", "item_in_4", "rate_in_4"]
+df_factory_planner_columns = ["area", "factory", "line", "building_name", "nb_building", "power_usage", "rate/overclock", "recipe_name",
+    "duration", "min_consumption","max_consumption","ingredient_1","ingredient_amount_1","ingredient_2","ingredient_amount_2","ingredient_3","ingredient_amount_3","ingredient_4","ingredient_amount_4","product_1","product_amount_1","product_2","product_amount_2"]
 
 
 @st.cache_data
@@ -131,7 +131,7 @@ def create_page(title: str) -> None:
 
         st.write("---")
 
-        col1, col2 = st.columns(spec=[1,3])
+        col1, col2 = st.columns(spec=[1,5])
 
         with col1:
             try:
@@ -162,8 +162,10 @@ def create_page(title: str) -> None:
                     st.success(f'Area added: "{new_area_name}"')
                     st.rerun()
         
-        if len(area_choice["selected_rows"]) > 0:
-            area_selected = area_choice["selected_rows"][0]["area"]
+        if area_choice["selected_rows"] is not None:
+            st.write(area_choice["selected_rows"])
+            area_selected = area_choice["selected_rows"].iloc[0]["area"]
+            st.write(area_selected)
 
             with col2:
                 st.title(f"{area_selected}")
@@ -173,7 +175,7 @@ def create_page(title: str) -> None:
 
             with st.container():
                 
-                with st.expander(f"⚙️ Manage Area ⚙️", expanded=False):
+                with st.expander(f"⚙️ Manage Area **{area_selected}** ⚙️", expanded=False):
                     col1, col2, col3 = st.columns(3)
                     with col1:
                         new_factory_name = st.text_input("Add factory", placeholder="Name of factory", value="")
@@ -197,7 +199,7 @@ def create_page(title: str) -> None:
                                 save_df(factory_planner_selected, df_factory_planner)
                                 st.rerun()
 
-                col1_factory, col2_factory = st.columns(spec=[1,3])
+                col1_factory, col2_factory = st.columns(spec=[1,5])
 
                 with col1_factory:
                     try:
@@ -225,8 +227,8 @@ def create_page(title: str) -> None:
                                             reload_data=False,
                                             )
                 
-                if len(factory_choice["selected_rows"]) > 0:
-                    factory_selected = factory_choice["selected_rows"][0]["factory"]
+                if factory_choice["selected_rows"] is not None:
+                    factory_selected = factory_choice["selected_rows"].iloc[0]["factory"]
 
                     with col2_factory:
                         st.title(f"{factory_selected}")
@@ -236,7 +238,7 @@ def create_page(title: str) -> None:
                     
                     with st.container():
 
-                        with st.expander(f"⚙️ Manage Factory ⚙️", expanded=False):
+                        with st.expander(f"⚙️ Manage Factory **{factory_selected}** ⚙️", expanded=False):
                             col1, col2, col3 = st.columns(3)
                             with col1:
                                 new_line_name = st.text_input("Add production line", placeholder="Name of production line", key=f"text_input_{factory_selected}", value="")
@@ -263,7 +265,7 @@ def create_page(title: str) -> None:
                                         save_df(factory_planner_selected, df_factory_planner)
                                         st.rerun()
 
-                        col1_line, col2_line = st.columns(spec=[1,3])
+                        col1_line, col2_line = st.columns(spec=[1,5])
 
                         with col1_line:
                             try:
@@ -289,10 +291,10 @@ def create_page(title: str) -> None:
                                                 reload_data=False,
                                                 )
                         
-                            if len(line_choice["selected_rows"]) > 0:
-                                line_selected = line_choice["selected_rows"][0]["line"]
+                            if line_choice["selected_rows"] is not None:
+                                line_selected = line_choice["selected_rows"].iloc[0]["line"]
 
-                                with st.expander(f"⚙️ Manage line ⚙️", expanded=False):
+                                with st.expander(f"⚙️ Manage line **{line_selected}** ⚙️", expanded=False):
                                     if st.checkbox('Delete production line ?', key=f"delete_line_{line_selected}"):
                                         confirmation = st.text_input(f'Write "{line_selected}" to confirm', value="")
                                         if confirmation == line_selected:
@@ -309,17 +311,17 @@ def create_page(title: str) -> None:
                                             save_df(factory_planner_selected, df_factory_planner)
                                             st.rerun()
 
-                        if len(line_choice["selected_rows"]) > 0:
-                            line_selected = line_choice["selected_rows"][0]["line"]
+                        if line_choice["selected_rows"] is not None:
+                            line_selected = line_choice["selected_rows"].iloc[0]["line"]
 
                             with col2_line:
                                 st.title(f"{line_selected}")
                                 display_results_item(df_factory_planner_lines[df_factory_planner_lines["line"] == line_selected], df_items)
 
                                 with st.expander("Edit lines", expanded=False):
-                                    list_of_recipes = sorted(list(df_recipes["name"].unique()))
+                                    list_of_recipes = sorted(list(df_recipes["recipe_name"].unique()))
                                     df_line = df_factory_planner_lines[df_factory_planner_lines["line"] == line_selected]
-                                    df_line_custom = pd.DataFrame(df_line[["nb_building", "rate/overclock", "recipe"]]).reset_index(drop=True)
+                                    df_line_custom = pd.DataFrame(df_line[["nb_building", "rate/overclock", "recipe_name"]]).reset_index(drop=True)
 
                                     column_config = {
                                         "rate/overclock": st.column_config.NumberColumn(disabled=False,
@@ -335,7 +337,7 @@ def create_page(title: str) -> None:
                                                                                     default=1,
                                                                                     min_value=1,
                                                                                     step=1),
-                                        "recipe": st.column_config.SelectboxColumn(label="Recipe",
+                                        "recipe_name": st.column_config.SelectboxColumn(label="Recipe",
                                                                                 help="Recipe to manufacture",
                                                                                 required=True,
                                                                                 options=list_of_recipes),
@@ -345,16 +347,16 @@ def create_page(title: str) -> None:
                                                             use_container_width=True, 
                                                             num_rows="dynamic",
                                                             hide_index=True,
-                                                            column_order=["nb_building", "rate/overclock", "recipe"],
+                                                            column_order=["nb_building", "rate/overclock", "recipe_name"],
                                                             key=f"data_editor_{line_selected}")
 
                                     if st.button("Save updates", key=f"update_{line_selected}"):
-                                        col_recipe = ["building", "item_out_1", "rate_out_1", "item_out_2", "rate_out_2", "item_in_1", "rate_in_1", "item_in_2", "rate_in_2", "item_in_3", "rate_in_3", "item_in_4", "rate_in_4"]
+                                        col_recipe = ["building_name", "duration", "min_consumption","max_consumption","ingredient_1","ingredient_amount_1","ingredient_2","ingredient_amount_2","ingredient_3","ingredient_amount_3","ingredient_4","ingredient_amount_4","product_1","product_amount_1","product_2","product_amount_2"]
                                         col_building = ["power_usage"]
                                         rows = []
                                         for i, df_edited_row in df_edited.iterrows():
-                                            new_row = df_recipes[df_recipes["name"] == df_edited_row["recipe"]][col_recipe].values.tolist()[0]
-                                            new_row += [df_buildings[df_buildings["name"] == new_row[0]][["base_power_use"]].values.tolist()[0][0], area_selected, factory_selected, line_selected]
+                                            new_row = df_recipes[df_recipes["recipe_name"] == df_edited_row["recipe_name"]][col_recipe].values.tolist()[0]
+                                            new_row += [df_buildings[df_buildings["name"] == new_row[0]][["power_usage"]].values.tolist()[0][0], area_selected, factory_selected, line_selected]
                                             rows.append(new_row)
                                         rows = np.array(rows)
 
@@ -365,7 +367,9 @@ def create_page(title: str) -> None:
                                         df_factory_planner = pd.concat([df_factory_planner, df_edited], ignore_index=True)
                                         save_df(factory_planner_selected, df_factory_planner)
                                         st.rerun()
-
-                                display_recipes_frame(df_recipes, df_items, df_buildings, df_line["recipe"], df_line["nb_building"], df_line["rate/overclock"])
+                                
+                                recipe_vars = dict(zip(df_line["recipe_name"], df_line["nb_building"]))
+                                recipe_var_to_name = dict(zip(df_line["recipe_name"], df_line["recipe_name"]))
+                                display_recipes_frame(df_recipes, df_items, df_buildings, recipe_vars, recipe_var_to_name)
 
                             st.write("---")

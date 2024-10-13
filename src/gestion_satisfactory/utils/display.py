@@ -183,16 +183,16 @@ def display_results_item(df_factory_planner, df_items, display_in_expander=False
     power_usage = 0
     for i, row in df_factory_planner.iterrows():
         for k in range(2):
-            if (row[f"item_out_{k+1}"] is not None):
-                if (row[f"item_out_{k+1}"] not in list(results_production.keys())):
-                    results_production[row[f"item_out_{k+1}"]] = 0
-                results_production[row[f"item_out_{k+1}"]] += float(row[f"rate_out_{k+1}"])*float(row["nb_building"])*float(row["rate/overclock"])
+            if (row[f"product_{k+1}"] is not None):
+                if (row[f"product_{k+1}"] not in list(results_production.keys())):
+                    results_production[row[f"product_{k+1}"]] = 0
+                results_production[row[f"product_{k+1}"]] += (60*float(row[f"product_amount_{k+1}"])/float(row["duration"]))*float(row["nb_building"])*float(row["rate/overclock"])
 
         for k in range(4):
-            if (row[f"item_in_{k+1}"] is not None):
-                if (row[f"item_in_{k+1}"] not in list(results_consommation.keys())):
-                    results_consommation[row[f"item_in_{k+1}"]] = 0
-                results_consommation[row[f"item_in_{k+1}"]] -= float(row[f"rate_in_{k+1}"])*float(row["nb_building"])*float(row["rate/overclock"])
+            if (row[f"ingredient_{k+1}"] is not None):
+                if (row[f"ingredient_{k+1}"] not in list(results_consommation.keys())):
+                    results_consommation[row[f"ingredient_{k+1}"]] = 0
+                results_consommation[row[f"ingredient_{k+1}"]] -= (60*float(row[f"ingredient_amount_{k+1}"])/float(row["duration"]))*float(row["nb_building"])*float(row["rate/overclock"])
         
         if (row["power_usage"] is not None):
             power_usage += float(row["power_usage"][:-3])*float(row["nb_building"])*float(row["rate/overclock"])
