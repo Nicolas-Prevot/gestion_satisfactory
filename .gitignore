@@ -138,14 +138,16 @@ dmypy.json
 cython_debug/
 
 # Poetry
-poetry.lock
+# poetry.lock
 
 # PyCharm files
 .idea/
 
 # Datasets and artifacts
+satisfactory.db
 data/
 logs/
 pg_data/
 static/
+
 !conf/static/

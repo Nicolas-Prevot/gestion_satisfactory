@@ -9,9 +9,11 @@ This project is a web application designed to help you manage and optimize produ
 - Docker
 - Docker compose
 
-## Running the App with Docker
+### For running as standalone process
 
-### Setup Instructions
+- conda
+
+## Setup Instructions
 
 1. Clone the Repository
 
@@ -30,11 +32,40 @@ This project is a web application designed to help you manage and optimize produ
 
     - Update the `.env` file with your desired configuration.
 
-3. Build and Run the Docker Containers
+3. Run the Webapp with/without Docker:
 
-    ```bash
-    docker compose up -d --build
-    ```
+    - Option 1: Webapp with Docker & postgres database with Docker
+
+        ```bash
+        docker compose -f docker-compose.yaml -f docker-compose.postgres.yaml up -d --build
+        ```
+
+    - Option 2: Webapp with Docker & sqlite database
+
+        ```bash
+        docker compose up -d --build
+        ```
+
+    - Option 3: Webapp & sqlite database without Docker
+
+        1. Start by instanciating your *Conda* environment by running the following command:
+
+            ```bash
+            conda env create -v -f environment.yml --force
+            conda activate satisfactory
+            ```
+
+        2. Install project dependencies with *Poetry*:
+
+            ```bash
+            poetry install --without dev
+            ```
+
+        3. Run the Webapp
+
+            ```bash
+            poetry run app
+            ```
 
 4. Access the Application
 
