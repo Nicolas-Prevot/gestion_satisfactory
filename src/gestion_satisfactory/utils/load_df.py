@@ -1,7 +1,7 @@
 import base64
 import pandas as pd
 
-from utils.connect_bdd import load_df
+from .connect_bdd import load_df
 
 
 def ReadPictureFile(wch_fl):

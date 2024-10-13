@@ -2,8 +2,6 @@ from st_aggrid import AgGrid, GridOptionsBuilder, JsCode, GridUpdateMode
 from streamlit_agraph import agraph
 
 
-
-
 def item_selector(df_items):
     gb = GridOptionsBuilder.from_dataframe(df_items[["name", "web_img"]])
 

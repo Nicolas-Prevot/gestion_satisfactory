@@ -93,7 +93,7 @@ def display_recipes_frame(df_recipes, df_items, df_buildings, recipe_vars, recip
             
             markdown_text += get_row_text(infos_row)
         
-    st.markdown(markdown_text, unsafe_allow_html=True)
+    st.markdown(body = markdown_text, unsafe_allow_html=True)
 
 
 def display_items_in_columns(df_items, items_dict, title):
@@ -101,18 +101,13 @@ def display_items_in_columns(df_items, items_dict, title):
     if items_dict:
         items = list(items_dict.items())
         num_cols = 3
-        cols = st.columns(num_cols)
+        cols = st.columns(spec = num_cols)
         for idx, (item, value) in enumerate(items):
             col = cols[idx % num_cols]
             src_img = df_items[df_items["name"] == item]["web_img"].tolist()[0]
             with col:
-                st.markdown(
-                    f'<div style="text-align: center;">'
-                    f'<img src="{src_img}" width="40px"><br>'
-                    f'{item}: {value:.2f}'
-                    f'</div>',
-                    unsafe_allow_html=True
-                )
+                markdown_text = f'<div style="text-align: center;"><img src="{src_img}" width="40px"><br>{item}: {value:.2f}</div>'
+                st.markdown(body=markdown_text, unsafe_allow_html=True)
     else:
         st.write(f"No {title.lower()} to display.")
 
@@ -120,23 +115,18 @@ def display_items_in_columns(df_items, items_dict, title):
 def display_buildings_in_columns(df_buildings, building_counts, title):
     st.write(f"### {title}")
     st.info(
-        "Note: The number of buildings required is calculated by rounding up the required amount for each recipe individually and summing them up. This ensures that each recipe has the necessary full buildings allocated."
+        body="Note: The number of buildings required is calculated by rounding up the required amount for each recipe individually and summing them up. This ensures that each recipe has the necessary full buildings allocated."
     )
     if building_counts:
         buildings = list(building_counts.items())
         num_cols = 3
-        cols = st.columns(num_cols)
+        cols = st.columns(spec=num_cols)
         for idx, (building, count) in enumerate(buildings):
             col = cols[idx % num_cols]
             src_img = df_buildings[df_buildings["name"] == building]["web_img"].tolist()[0]
             with col:
-                st.markdown(
-                    f'<div style="text-align: center;">'
-                    f'<img src="{src_img}" width="40px"><br>'
-                    f'{building}: {count}'
-                    f'</div>',
-                    unsafe_allow_html=True
-                )
+                markdown_text = f'<div style="text-align: center;"><img src="{src_img}" width="40px"><br>{building}: {count}</div>'
+                st.markdown(body=markdown_text, unsafe_allow_html=True)
     else:
         st.write(f"No {title.lower()} to display.")
 
@@ -181,9 +171,9 @@ def display_items_balance(df_recipes, df_items, df_buildings, raw_items, not_raw
     not_raw_items_output = {item: value for item, value in items_output.items() if item in not_raw_items}
             
     display_items_in_columns(df_items, raw_items_output, "Consumption of raw ressources")
-    st.write("---")
+    st.divider()
     display_items_in_columns(df_items, not_raw_items_output, "Items production")
-    st.write("---")
+    st.divider()
     display_buildings_in_columns(df_buildings, building_counts, "Buildings Needed")
 
 
@@ -227,34 +217,34 @@ def display_results_item(df_factory_planner, df_items, display_in_expander=False
     st.write(f"⚡ {power_usage} MW ⚡")
 
     def write_cols():
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3 = st.columns(spec=3)
         with col1:
             if (len(results_positive) != 0):
                 for item in results_positive:
                     conso = results_consommation[item] if item in list(results_consommation.keys()) else 0
                     prod = results_production[item] if item in list(results_production.keys()) else 0
-                    st.markdown(f'<img src="{df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]}" width=40px> {item.replace("_", " ")}: \
-                                **<span style="color:#63ACFF">{results_positive[item]}</span>** (<span style="color:#00C800">{prod}</span> | <span style="color:#FF965E">{conso}</span>)',
-                                unsafe_allow_html=True)
+                    markdown_text = f'<img src="{df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]}" width=40px> {item.replace("_", " ")}: \
+                                    **<span style="color:#63ACFF">{results_positive[item]}</span>** (<span style="color:#00C800">{prod}</span> | <span style="color:#FF965E">{conso}</span>)'
+                    st.markdown(body=markdown_text, unsafe_allow_html=True)
         with col2:
             if (len(results_negative) != 0):
                 for item in results_negative:
                     conso = results_consommation[item] if item in list(results_consommation.keys()) else 0
                     prod = results_production[item] if item in list(results_production.keys()) else 0
-                    st.markdown(f'<img src="{df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]}" width=40px> {item.replace("_", " ")}: \
-                                **<span style="color:#FF5154">{results_negative[item]}</span>** (<span style="color:#00C800">{prod}</span> | <span style="color:#FF965E">{conso}</span>)',
-                                unsafe_allow_html=True)
+                    markdown_text = f'<img src="{df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]}" width=40px> {item.replace("_", " ")}: \
+                                    **<span style="color:#FF5154">{results_negative[item]}</span>** (<span style="color:#00C800">{prod}</span> | <span style="color:#FF965E">{conso}</span>)'
+                    st.markdown(body=markdown_text, unsafe_allow_html=True)
         with col3:
             if (len(results_negative_imports) != 0):
                 for item in results_negative_imports:
                     conso = results_consommation[item] if item in list(results_consommation.keys()) else 0
                     prod = results_production[item] if item in list(results_production.keys()) else 0
-                    st.markdown(f'<img src="{df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]}" width=40px> {item.replace("_", " ")}: \
-                                **<span style="color:#FF5154">{results_negative_imports[item]}</span>** (<span style="color:#00C800">{prod}</span> | <span style="color:#FF965E">{conso}</span>)',
-                                unsafe_allow_html=True)
+                    markdown_text = f'<img src="{df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]}" width=40px> {item.replace("_", " ")}: \
+                                    **<span style="color:#FF5154">{results_negative_imports[item]}</span>** (<span style="color:#00C800">{prod}</span> | <span style="color:#FF965E">{conso}</span>)'
+                    st.markdown(body=markdown_text, unsafe_allow_html=True)
                                 
     if (display_in_expander):
-        with st.expander("Results"):
+        with st.expander(label="Results"):
             write_cols()
     else:
         write_cols()

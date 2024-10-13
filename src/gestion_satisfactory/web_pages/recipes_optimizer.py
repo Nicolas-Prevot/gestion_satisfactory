@@ -12,7 +12,7 @@ from gestion_satisfactory.utils.load_df import get_df_from_tables
 from gestion_satisfactory.utils.grids import item_selector
 from gestion_satisfactory.utils.graph import create_genealogy_graph
 from gestion_satisfactory.utils.display import display_recipes_frame, display_items_balance
-from gestion_satisfactory.utils.update_bdd_from_web import update_postgres_bdd
+from gestion_satisfactory.utils.update_bdd_from_web import update_bdd
 
 raw_materials_1_ = {
     'Limestone':1.,
@@ -141,7 +141,7 @@ def create_page(title: str) -> None:
     try:
         df_items, df_buildings, df_recipes_ = cached_get_df_from_tables()
     except:
-        update_postgres_bdd(streamlit_display=True)
+        update_bdd(streamlit_display=True)
         st.rerun()
 
     df_recipes_['tier'] = df_recipes_['unlocked_by'].apply(extract_tier)
@@ -155,8 +155,8 @@ def create_page(title: str) -> None:
     df_recipes_ = df_recipes_[condition]
 
     max_tier = st.selectbox(
-        "Select the maximum technology tier to include:",
-        [f"Tier {i}" for i in range(10)],
+        label = "Select the maximum technology tier to include:",
+        options = [f"Tier {i}" for i in range(10)],
         index = 9,
     )
     max_tier_num = int(re.search(r'\d+', max_tier).group())
@@ -173,43 +173,43 @@ def create_page(title: str) -> None:
         raw_materials_1, raw_materials_limit_1, raw_materials_2, raw_materials_limit_2, df_recipes, items_uncraftable = remove_uncraftable_rows(df_recipes, raw_materials_1, raw_materials_2, raw_materials_limit_1, raw_materials_limit_2)
 
 
-    with st.expander("Change importance / weight on raw items"):
+    with st.expander(label = "Change importance / weight on raw items"):
         col1, col2 = st.columns(spec=2)
         with col1:
             for i, item in enumerate(raw_materials_1):
                 col1_1, col1_2 = st.columns(spec=2)
                 with col1_1:
                     src_img = df_items[df_items["name"] == item]["web_img"].tolist()[0]
-                    st.markdown(f'<img src="{src_img}" width=40px>   {item}', unsafe_allow_html=True)
+                    st.markdown(body = f'<img src="{src_img}" width=40px>   {item}', unsafe_allow_html=True)
                 with col1_2:
-                    raw_materials_1[item] = st.slider("", key=f"input1_{i}", min_value=0., max_value=50., value=float(raw_materials_1[item]), label_visibility= "collapsed")
+                    raw_materials_1[item] = st.slider(label = "t", key=f"input1_{i}", min_value=0., max_value=50., value=float(raw_materials_1[item]), label_visibility= "collapsed")
         with col2:
             for i, item in enumerate(raw_materials_2):
                 col1_1, col1_2 = st.columns(spec=2)
                 with col1_1:
                     src_img = df_items[df_items["name"] == item]["web_img"].tolist()[0]
-                    st.markdown(f'<img src="{src_img}" width=40px>   {item}', unsafe_allow_html=True)
+                    st.markdown(body = f'<img src="{src_img}" width=40px>   {item}', unsafe_allow_html=True)
                 with col1_2:
-                    raw_materials_2[item] = st.slider("", key=f"input2_{i}", min_value=0., max_value=100., value=float(raw_materials_2[item]), label_visibility= "collapsed")
+                    raw_materials_2[item] = st.slider(label = "t", key=f"input2_{i}", min_value=0., max_value=100., value=float(raw_materials_2[item]), label_visibility= "collapsed")
     
-    with st.expander("Change limit on raw items"):
+    with st.expander(label = "Change limit on raw items"):
         col1, col2 = st.columns(spec=2)
         with col1:
             for i, item in enumerate(raw_materials_limit_1):
                 col1_1, col1_2 = st.columns(spec=2)
                 with col1_1:
                     src_img = df_items[df_items["name"] == item]["web_img"].tolist()[0]
-                    st.markdown(f'<img src="{src_img}" width=40px>   {item}', unsafe_allow_html=True)
+                    st.markdown(body = f'<img src="{src_img}" width=40px>   {item}', unsafe_allow_html=True)
                 with col1_2:
-                    raw_materials_limit_1[item] = st.slider("", key=f"input_limit_1_{i}", min_value=0, step=1, max_value=10000, value=int(raw_materials_limit_1[item]), label_visibility= "collapsed")
+                    raw_materials_limit_1[item] = st.slider(label = "t", key=f"input_limit_1_{i}", min_value=0, step=1, max_value=10000, value=int(raw_materials_limit_1[item]), label_visibility= "collapsed")
         with col2:
             for i, item in enumerate(raw_materials_limit_2):
                 col1_1, col1_2 = st.columns(spec=2)
                 with col1_1:
                     src_img = df_items[df_items["name"] == item]["web_img"].tolist()[0]
-                    st.markdown(f'<img src="{src_img}" width=40px>   {item}', unsafe_allow_html=True)
+                    st.markdown(body = f'<img src="{src_img}" width=40px>   {item}', unsafe_allow_html=True)
                 with col1_2:
-                    raw_materials_limit_2[item] = st.slider("", key=f"input_limit_2_{i}", min_value=0, step=1, max_value=1000, value=int(raw_materials_limit_2[item]), label_visibility= "collapsed")
+                    raw_materials_limit_2[item] = st.slider(label = "t", key=f"input_limit_2_{i}", min_value=0, step=1, max_value=1000, value=int(raw_materials_limit_2[item]), label_visibility= "collapsed")
     
     raw_items = list(raw_materials_1)+list(raw_materials_2)
     not_raw_items = (set(df_recipes[[f'ingredient_{k}' for k in range(1,5)]].values.flatten()) | 
@@ -227,7 +227,7 @@ def create_page(title: str) -> None:
         if item_to_optim_prod["selected_rows"] is not None:
             for e in item_to_optim_prod["selected_rows"].itertuples():
                 items_to_produce.append(e.name)
-                quantities.append(st.slider(f"Desired number of {e.name} :", min_value=0, step=1, value=30))
+                quantities.append(st.slider(label = f"Desired number of {e.name} :", min_value=0, step=1, value=30))
         
     weights_raw_items_dict = raw_materials_1 | {key: value * 1000 for key, value in raw_materials_2.items()}
     limits_raw_items_dict = raw_materials_limit_1 | raw_materials_limit_2
@@ -237,20 +237,19 @@ def create_page(title: str) -> None:
         recipe_vars, recipe_var_to_name, status = get_optimize_prod(df_recipes, raw_items, weights_raw_items_dict, limits_raw_items_dict, not_raw_items, selected_products)
 
         if status == "Optimal":
-            st.success("Optimal solution found!")
+            st.success(body = "Optimal solution found!")
         elif status == "Infeasible":
-            st.warning(f"Request Infeasible. Try reducing the expected amount of outputs or increase the limits on raw ressources")
+            st.warning(body = f"Request Infeasible. Try reducing the expected amount of outputs or increase the limits on raw ressources")
         else:
-            st.error(f"Issue during optimization : '{status}'")
+            st.error(body = f"Issue during optimization : '{status}'")
 
-        tab1, tab2, tab3 = st.tabs(["Recipes", "Materials", "Graph"])
+        tab1, tab2, tab3 = st.tabs(tabs = ["Recipes", "Materials", "Graph"])
 
         with tab1:
             display_recipes_frame(df_recipes, df_items, df_buildings, recipe_vars, recipe_var_to_name, 1e-4)   
         
         with tab2:
             display_items_balance(df_recipes, df_items, df_buildings, raw_items, not_raw_items, recipe_vars, recipe_var_to_name, 1e-4)
-
 
         with tab3:
             nodes, edges, config = create_genealogy_graph(df_recipes, df_items, df_buildings, recipe_vars, recipe_var_to_name, 1e-4)

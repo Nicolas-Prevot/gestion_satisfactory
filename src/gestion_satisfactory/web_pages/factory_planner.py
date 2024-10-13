@@ -9,7 +9,7 @@ from PIL import Image
 from gestion_satisfactory.utils.load_df import get_df_from_tables
 from gestion_satisfactory.utils.display import display_results_item, display_recipes_frame
 from gestion_satisfactory.utils.connect_bdd import load_df, save_df, get_list_tables, delete_table
-from gestion_satisfactory.utils.update_bdd_from_web import update_postgres_bdd
+from gestion_satisfactory.utils.update_bdd_from_web import update_bdd
 
 
 def display_name_to_table_name(display_name):
@@ -50,7 +50,7 @@ def create_page(title: str) -> None:
         list_tables.remove("buildings")
         list_tables.remove("recipes")
     except:
-        update_postgres_bdd(streamlit_display=True)
+        update_bdd(streamlit_display=True)
         st.rerun()
 
     dict_display_table = {table_name_to_display_name(name):name for name in list_tables}
