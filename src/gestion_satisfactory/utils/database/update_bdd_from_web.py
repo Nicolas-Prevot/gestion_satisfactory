@@ -1,4 +1,4 @@
-from gestion_satisfactory.scraper.web_scraping import create_dfs
+from gestion_satisfactory.scraper.scraper import create_dfs
 from gestion_satisfactory.utils.database.connect_bdd import get_connexion
 
 
