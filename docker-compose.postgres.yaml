@@ -18,4 +18,6 @@ services:
         POSTGRES_SUPPORT: true
     depends_on:
       - postgres
+    environment:
+      POSTGRES_SUPPORT: true
 

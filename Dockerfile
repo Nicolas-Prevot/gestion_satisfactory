@@ -3,7 +3,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 COPY pyproject.toml .
-# COPY poetry.lock .  # Ensure you copy poetry.lock for reproducible builds
+COPY poetry.lock .
 
 # Install system dependencies and Poetry
 ARG POSTGRES_SUPPORT=false
