@@ -4,7 +4,7 @@ import requests
 import re
 import pandas as pd
 
-from .utils import parse_building_description, parse_building_recipes, flatten_building_data, flatten_recipes, sttqdm, save_img
+from gestion_satisfactory.scraper.utils import parse_building_description, parse_building_recipes, flatten_building_data, flatten_recipes, sttqdm, save_img
 
 
 def get_all_buildings_urls(url, streamlit_display=False):

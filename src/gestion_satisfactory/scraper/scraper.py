@@ -1,4 +1,4 @@
-from .urls import get_all_buildings_urls, get_all_dfs_production, save_imgs
+from gestion_satisfactory.scraper.urls import get_all_buildings_urls, get_all_dfs_production, save_imgs
 
 def create_dfs(streamlit_display=False):
     path_imgs = "static/"

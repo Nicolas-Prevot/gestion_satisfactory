@@ -195,7 +195,9 @@ def display_results_item(df_factory_planner, df_items, display_in_expander=False
                 results_consommation[row[f"ingredient_{k+1}"]] -= (60*float(row[f"ingredient_amount_{k+1}"])/float(row["duration"]))*float(row["nb_building"])*float(row["rate/overclock"])
         
         if (row["power_usage"] is not None):
-            power_usage += float(row["power_usage"][:-3])*float(row["nb_building"])*float(row["rate/overclock"])
+            power_usage += float(row["power_usage"])*float(row["nb_building"])*float(row["rate/overclock"])
+        elif (row["min_consumption"] is not None) and (row["max_consumption"] is not None):
+            power_usage += (float(row["max_consumption"]) - float(row["min_consumption"]))*float(row["nb_building"])*float(row["rate/overclock"])/2
 
     results_positive = {}
     results_negative = {}
@@ -223,7 +225,7 @@ def display_results_item(df_factory_planner, df_items, display_in_expander=False
                 for item in results_positive:
                     conso = results_consommation[item] if item in list(results_consommation.keys()) else 0
                     prod = results_production[item] if item in list(results_production.keys()) else 0
-                    markdown_text = f'<img src="{df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]}" width=40px> {item.replace("_", " ")}: \
+                    markdown_text = f'<img src="{df_items[df_items["name"] == item]["web_img"].tolist()[0]}" width=40px> {item.replace("_", " ")}: \
                                     **<span style="color:#63ACFF">{results_positive[item]}</span>** (<span style="color:#00C800">{prod}</span> | <span style="color:#FF965E">{conso}</span>)'
                     st.markdown(body=markdown_text, unsafe_allow_html=True)
         with col2:
@@ -231,7 +233,7 @@ def display_results_item(df_factory_planner, df_items, display_in_expander=False
                 for item in results_negative:
                     conso = results_consommation[item] if item in list(results_consommation.keys()) else 0
                     prod = results_production[item] if item in list(results_production.keys()) else 0
-                    markdown_text = f'<img src="{df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]}" width=40px> {item.replace("_", " ")}: \
+                    markdown_text = f'<img src="{df_items[df_items["name"] == item]["web_img"].tolist()[0]}" width=40px> {item.replace("_", " ")}: \
                                     **<span style="color:#FF5154">{results_negative[item]}</span>** (<span style="color:#00C800">{prod}</span> | <span style="color:#FF965E">{conso}</span>)'
                     st.markdown(body=markdown_text, unsafe_allow_html=True)
         with col3:
@@ -239,7 +241,7 @@ def display_results_item(df_factory_planner, df_items, display_in_expander=False
                 for item in results_negative_imports:
                     conso = results_consommation[item] if item in list(results_consommation.keys()) else 0
                     prod = results_production[item] if item in list(results_production.keys()) else 0
-                    markdown_text = f'<img src="{df_items[df_items["name"] == item]["streamlit_path_img"].tolist()[0]}" width=40px> {item.replace("_", " ")}: \
+                    markdown_text = f'<img src="{df_items[df_items["name"] == item]["web_img"].tolist()[0]}" width=40px> {item.replace("_", " ")}: \
                                     **<span style="color:#FF5154">{results_negative_imports[item]}</span>** (<span style="color:#00C800">{prod}</span> | <span style="color:#FF965E">{conso}</span>)'
                     st.markdown(body=markdown_text, unsafe_allow_html=True)
                                 

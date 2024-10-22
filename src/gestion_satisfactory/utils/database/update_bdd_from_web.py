@@ -1,5 +1,5 @@
-from ..web_scraping.web_scraping import create_dfs
-from .connect_bdd import get_connexion
+from gestion_satisfactory.scraper.web_scraping import create_dfs
+from gestion_satisfactory.utils.database.connect_bdd import get_connexion
 
 
 def update_bdd(streamlit_display=False):

@@ -2,20 +2,27 @@ from sqlalchemy import create_engine, MetaData, Table
 import pandas as pd
 import os
 import streamlit as st
+from loguru import logger
+
 
 @st.cache_resource
 def get_connexion():
-    try:
+    postgres_support = os.environ.get('POSTGRES_SUPPORT', 'false').lower() == 'true'
+    if postgres_support:
+        logger.info("Creating a PostgreSQL connection...")
         # Chaîne de connexion à la base de données PostgreSQL
         db_url = f"postgresql://{os.environ['USER']}:{os.environ['POSTGRES_PASSWORD']}@{os.environ['HOST']}:{os.environ['PORT_POSTGRES']}/{os.environ['POSTGRES_DB']}"
         # Création du moteur SQLAlchemy
         engine = create_engine(db_url)
-        with engine.connect() as conn:
-            pass  # Connection successful
-    except:
+    else:
+        logger.info("Creating a SQLite connection...")
         db_path = os.path.join('data', 'sqlite', 'satisfactory.db')
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
         engine = create_engine(f"sqlite:///{db_path}")
+    
+    with engine.connect() as conn:
+        pass  # Connection successful
+    logger.success("Connection to database established")
     return engine
 
 

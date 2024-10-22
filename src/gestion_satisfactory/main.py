@@ -5,7 +5,7 @@ from PIL import Image
 import sys
 import os
 
-from gestion_satisfactory.utils.load_pages_config import (
+from gestion_satisfactory.utils.config.load_pages_config import (
     display_sidebar_header,
     footer_streamlit_style,
     load_pages_config,

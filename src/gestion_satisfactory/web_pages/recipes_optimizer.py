@@ -7,117 +7,24 @@ import numpy as np
 from PIL import Image
 import re
 
-from gestion_satisfactory.utils.optimize import get_optimize_prod
-from gestion_satisfactory.utils.load_df import get_df_from_tables
-from gestion_satisfactory.utils.grids import item_selector
-from gestion_satisfactory.utils.graph import create_genealogy_graph
+from gestion_satisfactory.utils.optimization.optimize import get_optimize_prod
+from gestion_satisfactory.utils.database.load_df import get_df_from_tables
+from gestion_satisfactory.utils.display.grids import item_selector
+from gestion_satisfactory.utils.display.graph import create_genealogy_graph
 from gestion_satisfactory.utils.display import display_recipes_frame, display_items_balance
-from gestion_satisfactory.utils.update_bdd_from_web import update_bdd
+from gestion_satisfactory.utils.database.update_bdd_from_web import update_bdd
+from gestion_satisfactory.utils.config import (
+    raw_materials_1_,
+    raw_materials_2_,
+    raw_materials_limit_1_,
+    raw_materials_limit_2_,
+)
+from gestion_satisfactory.utils.optimization.recipe_utils import extract_tier, remove_uncraftable_rows
 
-raw_materials_1_ = {
-    'Limestone':1.,
-    'Iron Ore':1.,
-    'Copper Ore':1.,
-    'Coal':2.,
-    'Sulfur':2.,
-    'Raw Quartz':4.,
-    'Bauxite':8.,
-    'Caterium Ore':6.,
-    'Water':0.,
-    'Crude Oil':.5,
-    'Nitrogen Gas':6.,
-    'Uranium':12.,
-    'SAM':50.,
-    'Uranium Waste':10.,
-    'Plutonium Waste':10.,
-}
-
-raw_materials_2_ = {
-    'Mycelia':1.,
-    'Leaves':1.,
-    'Wood':1.,
-    'Blue Power Slug':1.,
-    'Purple Power Slug':1.,
-    'Yellow Power Slug':1.,
-    'Stinger Remains':1.,
-    'Hog Remains':1.,
-    'Hatcher Remains':1.,
-    'Spitter Remains':1.,
-    'FICSMAS Tree Branch':1.,
-    'FICSMAS Bow':1.,
-    'Actual Snow':1.,
-    'Candy Cane':1.,
-}
-
-raw_materials_limit_1_ = {
-    'Limestone':5000.,
-    'Iron Ore':5000.,
-    'Copper Ore':5000.,
-    'Coal':5000.,
-    'Sulfur':5000.,
-    'Raw Quartz':4000.,
-    'Bauxite':2000.,
-    'Caterium Ore':1000.,
-    'Water':10000.,
-    'Crude Oil':8000.,
-    'Nitrogen Gas':1000.,
-    'Uranium':1000.,
-    'SAM':500.,
-    'Uranium Waste':10.,
-    'Plutonium Waste':10.,
-}
-
-raw_materials_limit_2_ = {
-    'Mycelia':200.,
-    'Leaves':200.,
-    'Wood':200.,
-    'Blue Power Slug':200.,
-    'Purple Power Slug':200.,
-    'Yellow Power Slug':200.,
-    'Stinger Remains':200.,
-    'Hog Remains':200.,
-    'Hatcher Remains':200.,
-    'Spitter Remains':200.,
-    'FICSMAS Tree Branch':200.,
-    'FICSMAS Bow':200.,
-    'Actual Snow':200.,
-    'Candy Cane':200.,
-}
 
 @st.cache_data
 def cached_get_df_from_tables():
     return get_df_from_tables()
-
-
-def extract_tier(unlocked_by):
-    if pd.isnull(unlocked_by) or unlocked_by == '':
-        return 0  # Default tier 0 for items without 'unlocked_by'
-    match = re.search(r'Tier (\d+)', unlocked_by)
-    if match:
-        return int(match.group(1))
-    else:
-        return 0
-
-
-def remove_uncraftable_rows(df_recipes, raw_materials_1_, raw_materials_2_, raw_materials_limit_1_, raw_materials_limit_2_):
-    ingredients = set(df_recipes[[f'ingredient_{k}' for k in range(1,5)]].values.flatten()) - set([np.nan, None])
-
-    raw_materials_1 = {item: value for item, value in raw_materials_1_.items() if item in ingredients}
-    raw_materials_limit_1 = {item: value for item, value in raw_materials_limit_1_.items() if item in ingredients}
-    raw_materials_2 = {item: value for item, value in raw_materials_2_.items() if item in ingredients}
-    raw_materials_limit_2 = {item: value for item, value in raw_materials_limit_2_.items() if item in ingredients}
-
-    products = set(df_recipes[[f'product_{k}' for k in range(1,3)]].values.flatten()) - set([np.nan, None])
-    items_uncraftable = (ingredients - products) - (set(raw_materials_1) | set(raw_materials_2))
-
-    def ingredients_available(recipe_row):
-        ingredients = recipe_row[[f'ingredient_{k}' for k in range(1, 5)]].values
-        ingredients = [ing for ing in ingredients if pd.notnull(ing)]
-        return all(ing not in items_uncraftable for ing in ingredients)
-    
-    df_recipes = df_recipes[df_recipes.apply(ingredients_available, axis=1)].copy()
-
-    return raw_materials_1, raw_materials_limit_1, raw_materials_2, raw_materials_limit_2, df_recipes, items_uncraftable
 
 
 def create_page(title: str) -> None:
