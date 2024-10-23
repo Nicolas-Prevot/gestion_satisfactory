@@ -1,6 +1,6 @@
 import base64
 import pandas as pd
-from typing import Tuple
+from typing import Tuple, List, Optional
 
 from gestion_satisfactory.utils.database.connect_bdd import load_df
 
@@ -23,7 +23,7 @@ def ReadPictureFile(wch_fl: str) -> str:
     try:
         return base64.b64encode(open(wch_fl, "rb").read()).decode()
 
-    except:
+    except Exception:
         return ""
 
 
@@ -41,8 +41,8 @@ def get_df_from_tables() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
     """
     df_items = load_df("items")
-    new_path = []
-    new_path_web = []
+    new_path: List[Optional[str]] = []
+    new_path_web: List[Optional[str]] = []
     for i, url in enumerate(df_items["path_img"]):
         new_path.append("app/" + url)
         imgExtn = url[-4:]

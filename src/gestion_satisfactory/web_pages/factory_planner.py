@@ -45,7 +45,7 @@ def create_page(title: str) -> None:
         list_tables.remove("items")
         list_tables.remove("buildings")
         list_tables.remove("recipes")
-    except:
+    except Exception:
         update_bdd(streamlit_display=True)
         st.rerun()
 
@@ -137,7 +137,7 @@ def create_page(title: str) -> None:
         with col1:
             try:
                 options = list(df_factory_planner["area"].unique())
-            except:
+            except Exception:
                 options = []
 
             df_options_area = pd.DataFrame(options, columns=["area"])
@@ -222,7 +222,7 @@ def create_page(title: str) -> None:
                         factories_list = list(df_factory_planner_factories["factory"].unique())
                         if None in factories_list:
                             factories_list.remove(None)
-                    except:
+                    except Exception:
                         factories_list = []
                         st.write("No factory created")
 
@@ -318,7 +318,7 @@ def create_page(title: str) -> None:
                                 lines_list = list(df_factory_planner_lines["line"].unique())
                                 if None in lines_list:
                                     lines_list.remove(None)
-                            except:
+                            except Exception:
                                 lines_list = []
                                 st.write("No line created")
 
@@ -462,12 +462,12 @@ def create_page(title: str) -> None:
                                                 line_selected,
                                             ]
                                             rows.append(new_row)
-                                        rows = np.array(rows)
+                                        rows_array = np.array(rows)
 
                                         for i, name_col in enumerate(
                                             col_recipe + col_building + ["area", "factory", "line"]
                                         ):
-                                            df_edited[name_col] = rows[:, i]
+                                            df_edited[name_col] = rows_array[:, i]
 
                                         df_factory_planner.drop(list(df_line.index), inplace=True)
                                         df_factory_planner = pd.concat(

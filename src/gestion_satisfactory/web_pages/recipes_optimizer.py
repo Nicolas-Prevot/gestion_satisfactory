@@ -59,7 +59,7 @@ def create_page(title: str) -> None:
 
     try:
         df_items, df_buildings, df_recipes_ = cached_get_df_from_tables()
-    except:
+    except Exception:
         update_bdd(streamlit_display=True)
         st.rerun()
 
@@ -75,7 +75,8 @@ def create_page(title: str) -> None:
     max_tier = st.selectbox(
         label="Select the maximum technology tier to include:", options=[f"Tier {i}" for i in range(10)], index=9
     )
-    max_tier_num = int(re.search(r"\d+", max_tier).group())
+    match = re.search(r"\d+", max_tier)
+    max_tier_num = int(match.group()) if match is not None else 0
 
     df_recipes = df_recipes_[df_recipes_["tier"] <= max_tier_num].copy()
 
@@ -170,12 +171,12 @@ def create_page(title: str) -> None:
                     )
 
     raw_items = list(raw_materials_1) + list(raw_materials_2)
-    not_raw_items = (
+    not_raw_items_set = (
         set(df_recipes[[f"ingredient_{k}" for k in range(1, 5)]].values.flatten())
         | set(df_recipes[[f"product_{k}" for k in range(1, 3)]].values.flatten())
     ) - set([np.nan, None])
-    not_raw_items -= set(raw_items)
-    not_raw_items = list(not_raw_items)
+    not_raw_items_set -= set(raw_items)
+    not_raw_items = list(not_raw_items_set)
 
     with st.sidebar:
         df_not_raw_items = df_items[df_items["name"].isin(not_raw_items)]
@@ -220,4 +221,4 @@ def create_page(title: str) -> None:
             nodes, edges, config = create_genealogy_graph(
                 df_recipes, df_items, df_buildings, recipe_vars, recipe_var_to_name, 1e-4
             )
-            return_value = agraph(nodes=nodes, edges=edges, config=config)
+            agraph(nodes=nodes, edges=edges, config=config)

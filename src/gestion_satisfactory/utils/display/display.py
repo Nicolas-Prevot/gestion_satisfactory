@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Union, Mapping
 import pandas as pd
 import math
 import streamlit as st
@@ -157,7 +157,7 @@ def display_recipes_frame(
     st.markdown(body=markdown_text, unsafe_allow_html=True)
 
 
-def display_items_in_columns(df_items: pd.DataFrame, items_dict: Dict[str, float], title: str) -> None:
+def display_items_in_columns(df_items: pd.DataFrame, items_dict: Mapping[str, Union[int, float]], title: str) -> None:
     """
     Display items in columns with their corresponding values.
 
@@ -286,13 +286,13 @@ def display_items_balance(
 
         for item in all_items:
             net_prod = sum(
-                df_recipes.at[idx, f"product_amount_{l}"]
-                for l in range(1, 3)
-                if df_recipes.at[idx, f"product_{l}"] == item
+                df_recipes.at[idx, f"product_amount_{product_idx}"]
+                for product_idx in range(1, 3)
+                if df_recipes.at[idx, f"product_{product_idx}"] == item
             ) - sum(
-                df_recipes.at[idx, f"ingredient_amount_{k}"]
-                for k in range(1, 5)
-                if df_recipes.at[idx, f"ingredient_{k}"] == item
+                df_recipes.at[idx, f"ingredient_amount_{ingredient_idx}"]
+                for ingredient_idx in range(1, 5)
+                if df_recipes.at[idx, f"ingredient_{ingredient_idx}"] == item
             )
             net_prod_per_minute = net_prod * 60 * amount / duration
             items_output[item] += net_prod_per_minute
@@ -330,9 +330,9 @@ def display_results_item(
     None
 
     """
-    results_production = {}
-    results_consommation = {}
-    power_usage = 0
+    results_production: Dict[str, float] = {}
+    results_consommation: Dict[str, float] = {}
+    power_usage: float = 0.0
     for i, row in df_factory_planner.iterrows():
         for k in range(2):
             if row[f"product_{k+1}"] is not None:

@@ -35,7 +35,7 @@ def get_connexion() -> Engine:
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
         engine = create_engine(f"sqlite:///{db_path}")
 
-    with engine.connect() as conn:
+    with engine.connect():
         pass  # Connection successful
     logger.success("Connection to database established")
     return engine
