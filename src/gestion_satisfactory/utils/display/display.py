@@ -1,4 +1,6 @@
+from typing import Optional, Dict, Any, List
 import re
+import pandas as pd
 import math
 import streamlit as st
 
@@ -10,7 +12,29 @@ NB_BUILDING_COLOR="#00A9FF"
 RATE_COLOR="#00C800"
 
 
-def get_item_display(img, name, rate=0, oc=0, nb_building=0):
+def get_item_display(img: str, name: Optional[str], rate: float = 0, oc: float = 0, nb_building: float = 0) -> str:
+    """
+    Generate HTML content to display an item with its details.
+
+    Parameters
+    ----------
+    img : str
+        URL or path to the item's image.
+    name : str or None
+        Name of the item.
+    rate : float, optional
+        Production rate of the item, by default 0.
+    oc : float, optional
+        Overclock factor, by default 0.
+    nb_building : float, optional
+        Number of buildings producing the item, by default 0.
+
+    Returns
+    -------
+    str
+        HTML string representing the item's display content.
+
+    """
     string = ""
     if name is None:
         return string
@@ -36,7 +60,21 @@ def get_item_display(img, name, rate=0, oc=0, nb_building=0):
     return string
     
 
-def get_row_text(infos):
+def get_row_text(infos: Dict[str, Any]) -> str:
+    """
+    Construct a markdown table row with recipe information.
+
+    Parameters
+    ----------
+    infos : dict
+        Dictionary containing recipe and item information.
+
+    Returns
+    -------
+    str
+        A markdown-formatted string representing a table row.
+
+    """
     return f'|{infos["recipe_name"]}\
         |{"🔄" if infos["alternative"] else "🟦"}\
         |{get_item_display(infos["img_product_1"], infos["name_product_1"], infos["rate_product_1"], infos["overclock"], infos["nb_building"])}\
@@ -50,8 +88,30 @@ def get_row_text(infos):
         |{infos["nb_building"]:.2f}|\n'
 
 
-def display_recipes_frame(df_recipes, df_items, df_buildings, recipe_vars, recipe_var_to_name, THRESHOLD = 1e-4):
+def display_recipes_frame(df_recipes: pd.DataFrame, df_items: pd.DataFrame, df_buildings: pd.DataFrame, recipe_vars: Dict[str, float], recipe_var_to_name: Dict[str, str], THRESHOLD: float = 1e-4) -> None:
+    """
+    Display a markdown table of recipes based on provided variables.
 
+    Parameters
+    ----------
+    df_recipes : pd.DataFrame
+        DataFrame containing recipes.
+    df_items : pd.DataFrame
+        DataFrame containing items.
+    df_buildings : pd.DataFrame
+        DataFrame containing buildings.
+    recipe_vars : dict
+        Dictionary mapping recipe variable names to their amounts.
+    recipe_var_to_name : dict
+        Dictionary mapping recipe variable names to recipe names.
+    threshold : float, optional
+        Threshold below which values are considered negligible, by default 1e-4.
+
+    Returns
+    -------
+    None
+
+    """
     title_line = f'|Recipe name|Alt.|Out 1|Out 2|Buidling|In 1|In 2|In 3|In 4|<span style="color:{OC_COLOR}">OC</span>|<span style="color:{NB_BUILDING_COLOR}">Nb Building</span>|'
     setup_line = f"|{MD_LEFT_ALIGNED}|{MD_CENTER_ALIGNED}|{MD_LEFT_ALIGNED}|{MD_LEFT_ALIGNED}|{MD_CENTER_ALIGNED}|{MD_LEFT_ALIGNED}|{MD_LEFT_ALIGNED}|{MD_LEFT_ALIGNED}|{MD_LEFT_ALIGNED}|{MD_CENTER_ALIGNED}|{MD_CENTER_ALIGNED}|"
     
@@ -96,7 +156,24 @@ def display_recipes_frame(df_recipes, df_items, df_buildings, recipe_vars, recip
     st.markdown(body = markdown_text, unsafe_allow_html=True)
 
 
-def display_items_in_columns(df_items, items_dict, title):
+def display_items_in_columns(df_items: pd.DataFrame, items_dict: Dict[str, float], title: str) -> None:
+    """
+    Display items in columns with their corresponding values.
+
+    Parameters
+    ----------
+    df_items : pd.DataFrame
+        DataFrame containing item information.
+    items_dict : dict
+        Dictionary of items and their values to display.
+    title : str
+        Title for the section.
+
+    Returns
+    -------
+    None
+
+    """
     st.write(f"### {title}")
     if items_dict:
         items = list(items_dict.items())
@@ -112,7 +189,24 @@ def display_items_in_columns(df_items, items_dict, title):
         st.write(f"No {title.lower()} to display.")
 
 
-def display_buildings_in_columns(df_buildings, building_counts, title):
+def display_buildings_in_columns(df_buildings: pd.DataFrame, building_counts: Dict[str, int], title: str) -> None:
+    """
+    Display building counts in columns.
+
+    Parameters
+    ----------
+    df_buildings : pd.DataFrame
+        DataFrame containing building information.
+    building_counts : dict
+        Dictionary of building names and their counts.
+    title : str
+        Title for the section.
+
+    Returns
+    -------
+    None
+
+    """
     st.write(f"### {title}")
     st.info(
         body="Note: The number of buildings required is calculated by rounding up the required amount for each recipe individually and summing them up. This ensures that each recipe has the necessary full buildings allocated."
@@ -131,7 +225,34 @@ def display_buildings_in_columns(df_buildings, building_counts, title):
         st.write(f"No {title.lower()} to display.")
 
 
-def display_items_balance(df_recipes, df_items, df_buildings, raw_items, not_raw_items, recipe_vars, recipe_var_to_name, THRESHOLD = 1e-4):
+def display_items_balance(df_recipes: pd.DataFrame, df_items: pd.DataFrame, df_buildings: pd.DataFrame, raw_items: List[str], not_raw_items: List[str], recipe_vars: Dict[str, float], recipe_var_to_name: Dict[str, str], THRESHOLD: float = 1e-4) -> None:
+    """
+    Display the balance of items and buildings based on recipe variables.
+
+    Parameters
+    ----------
+    df_recipes : pd.DataFrame
+        DataFrame containing recipes.
+    df_items : pd.DataFrame
+        DataFrame containing items.
+    df_buildings : pd.DataFrame
+        DataFrame containing buildings.
+    raw_items : list
+        List of raw item names.
+    not_raw_items : list
+        List of non-raw item names.
+    recipe_vars : dict
+        Dictionary mapping recipe variable names to their amounts.
+    recipe_var_to_name : dict
+        Dictionary mapping recipe variable names to recipe names.
+    threshold : float, optional
+        Threshold below which values are considered negligible, by default 1e-4.
+
+    Returns
+    -------
+    None
+
+    """
     all_items = raw_items + not_raw_items
     items_output = dict.fromkeys(all_items, 0)
     building_counts = {}
@@ -177,7 +298,25 @@ def display_items_balance(df_recipes, df_items, df_buildings, raw_items, not_raw
     display_buildings_in_columns(df_buildings, building_counts, "Buildings Needed")
 
 
-def display_results_item(df_factory_planner, df_items, display_in_expander=False):
+def display_results_item(df_factory_planner: pd.DataFrame, df_items: pd.DataFrame, display_in_expander: bool = False) -> None:
+    """
+    Display the results of item production and consumption.
+
+    Parameters
+    ----------
+    df_factory_planner : pd.DataFrame
+        DataFrame containing factory planning information.
+    df_items : pd.DataFrame
+        DataFrame containing item information.
+    display_in_expander : bool, optional
+        If True, display the results within an expander widget; otherwise, display directly.
+        Default is False.
+
+    Returns
+    -------
+    None
+    
+    """
     results_production = {}
     results_consommation = {}
     power_usage = 0

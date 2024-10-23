@@ -1,10 +1,25 @@
 import base64
 import pandas as pd
+from typing import Tuple
 
 from gestion_satisfactory.utils.database.connect_bdd import load_df
 
 
-def ReadPictureFile(wch_fl):
+def ReadPictureFile(wch_fl: str) -> str:
+    """
+    Read an image file and return its base64 encoded string.
+
+    Parameters
+    ----------
+    wch_fl : str
+        The file path of the image to read.
+
+    Returns
+    -------
+    str
+        Base64 encoded string of the image, or an empty string if an error occurs.
+
+    """
     try:
         return base64.b64encode(open(wch_fl, 'rb').read()).decode()
 
@@ -12,8 +27,19 @@ def ReadPictureFile(wch_fl):
         return ""
 
 
-def get_df_from_tables():
+def get_df_from_tables() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """
+    Load and process DataFrames for items, buildings, and recipes from the database.
 
+    This function loads the 'items', 'buildings', and 'recipes' tables from the database.
+    It also processes image paths and encodes images in base64 for web display.
+
+    Returns
+    -------
+    Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
+        A tuple containing DataFrames for items, buildings, and recipes respectively.
+
+    """
     df_items = load_df("items")
     new_path = []
     new_path_web = []

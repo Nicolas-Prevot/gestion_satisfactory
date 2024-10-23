@@ -1,9 +1,35 @@
 from streamlit_agraph import agraph, Node, Edge, Config
+from typing import List, Dict, Tuple
 import numpy as np
+import pandas as pd
 import streamlit as st
 
 
-def create_genealogy_graph(df_recipes, df_items, df_buildings, recipe_vars, recipe_var_to_name, THRESHOLD = 1e-4):
+def create_genealogy_graph(df_recipes: pd.DataFrame, df_items: pd.DataFrame, df_buildings: pd.DataFrame, recipe_vars: Dict[str, float], recipe_var_to_name: Dict[str, str], THRESHOLD: float = 1e-4) -> Tuple[List[Node], List[Edge], Config]:
+    """
+    Create a genealogy graph representing the relationships between recipes and items.
+
+    Parameters
+    ----------
+    df_recipes : pd.DataFrame
+        DataFrame containing recipe information.
+    df_items : pd.DataFrame
+        DataFrame containing item information.
+    df_buildings : pd.DataFrame
+        DataFrame containing building information.
+    recipe_vars : dict
+        Dictionary mapping recipe variable names to their quantities.
+    recipe_var_to_name : dict
+        Dictionary mapping recipe variable names to recipe names.
+    THRESHOLD : float, optional
+        Threshold value below which a recipe amount is considered negligible, by default 1e-4.
+
+    Returns
+    -------
+    Tuple[List[Node], List[Edge], Config]
+        A tuple containing the list of nodes, list of edges, and graph configuration for visualization.
+        
+    """
     config = Config(width=9000,
                     height=650,
                     directed=True,

@@ -1,9 +1,42 @@
+from typing import Tuple, Dict, List
 import pandas as pd
 import numpy as np
 from pulp import LpProblem, LpMinimize, LpVariable, lpSum, LpStatus
 
 
-def get_optimize_prod(df_recipes, raw_items, raw_weights, raw_limits, not_raw_items, selected_products):
+def get_optimize_prod( df_recipes: pd.DataFrame,raw_items: List[str],raw_weights: Dict[str, float],raw_limits: Dict[str, float],not_raw_items: List[str],selected_products: Dict[str, float]) -> Tuple[Dict[str, float], Dict[str, str], str]:
+    """
+    Optimize the production of items based on recipes and constraints.
+
+    Parameters
+    ----------
+    df_recipes : pd.DataFrame
+        DataFrame containing recipe information.
+    raw_items : list of str
+        List of raw item names.
+    raw_weights : dict
+        Dictionary of weights for raw items used in the objective function.
+    raw_limits : dict
+        Dictionary of limits for raw items.
+    not_raw_items : list of str
+        List of non-raw item names.
+    selected_products : dict
+        Dictionary of desired production quantities for selected products.
+
+    Returns
+    -------
+    Tuple[Dict[str, float], Dict[str, str], str]
+        - recipe_vars: Dictionary mapping recipe variable names to their optimized amounts.
+        - recipe_var_to_name: Dictionary mapping recipe variable names to recipe names.
+        - status: Optimization status as a string.
+
+    Notes
+    -----
+    The function formulates and solves a linear programming problem to find the optimal
+    combination of recipes that meets the production targets while minimizing the use
+    of raw materials according to their weights and limits.
+
+    """
     df_recipes = df_recipes.copy().reset_index(drop=True)
     df_recipes['recipe'] = df_recipes.index
 

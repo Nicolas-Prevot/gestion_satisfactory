@@ -1,10 +1,10 @@
-from typing import Text
+from typing import Optional, Dict
 import requests
 import streamlit as st
 import toml
 
 
-def load_lottieurl(url: str) -> None | dict:
+def load_lottieurl(url: str) -> Optional[Dict]:
     """
     Load a Lottie animation from a URL.
 
@@ -15,8 +15,8 @@ def load_lottieurl(url: str) -> None | dict:
 
     Returns
     -------
-    dict
-        A dictionary containing the Lottie animation data.
+    dict or None
+        A dictionary containing the Lottie animation data if successful; otherwise, None.
 
     """
     r = requests.get(url)
@@ -27,7 +27,7 @@ def load_lottieurl(url: str) -> None | dict:
     return r.json()
 
 
-def load_pages_config():
+def load_pages_config() -> Dict:
     """
     Load and parse the page configuration from a TOML file.
 
@@ -41,13 +41,14 @@ def load_pages_config():
         A dictionary containing the parsed page configuration. Each key in the
         dictionary represents a different aspect of the page configuration (e.g.,
         'path', 'name', 'icon') with corresponding values.
+
     """
     with open(".streamlit/pages.toml", "r") as file:
         pages_config = toml.load(file)
     return pages_config
 
 
-def footer_streamlit_style(show_main_menu: bool = False):
+def footer_streamlit_style(show_main_menu: bool = False) -> str:
     """
     Customizes the footer of a Streamlit application.
 
@@ -117,12 +118,18 @@ def footer_streamlit_style(show_main_menu: bool = False):
 
 def display_sidebar_header(display_links: bool = False) -> None:
     """
-    Display sidebar header/footer.
+    Display the sidebar header/footer in the Streamlit app.
+
+    Parameters
+    ----------
+    display_links : bool, optional
+        If True, display additional links in the sidebar; otherwise, do not display.
+        Default is False.
 
     Returns
     -------
-    None.
-
+    None
+    
     """
     with st.sidebar:
         # Logo

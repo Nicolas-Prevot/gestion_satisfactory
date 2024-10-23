@@ -6,14 +6,15 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 import re
+from typing import Tuple, Dict, List
 
 from gestion_satisfactory.utils.optimization.optimize import get_optimize_prod
 from gestion_satisfactory.utils.database.load_df import get_df_from_tables
 from gestion_satisfactory.utils.display.grids import item_selector
 from gestion_satisfactory.utils.display.graph import create_genealogy_graph
-from gestion_satisfactory.utils.display import display_recipes_frame, display_items_balance
+from gestion_satisfactory.utils.display.display import display_recipes_frame, display_items_balance
 from gestion_satisfactory.utils.database.update_bdd_from_web import update_bdd
-from gestion_satisfactory.utils.config import (
+from gestion_satisfactory.utils.config.config import (
     raw_materials_1_,
     raw_materials_2_,
     raw_materials_limit_1_,
@@ -23,19 +24,32 @@ from gestion_satisfactory.utils.optimization.recipe_utils import extract_tier, r
 
 
 @st.cache_data
-def cached_get_df_from_tables():
+def cached_get_df_from_tables() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """
+    Cache and retrieve dataframes from tables.
+
+    Returns
+    -------
+    Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
+        A tuple containing dataframes for items, buildings, and recipes.
+
+    """
     return get_df_from_tables()
 
 
 def create_page(title: str) -> None:
     """
-    Create a streamlit page.
+    Create a Streamlit page for optimizing production recipes.
 
     Parameters
     ----------
-    title: str, optional
+    title : str
         The title of the page.
 
+    Returns
+    -------
+    None
+    
     """
     title = "Optimize your production recipes"
     st.write(

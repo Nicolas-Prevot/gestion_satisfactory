@@ -3,11 +3,28 @@ from bs4 import SoupStrainer
 import requests
 import re
 import pandas as pd
+from typing import Tuple
 
 from gestion_satisfactory.scraper.utils import parse_building_description, parse_building_recipes, flatten_building_data, flatten_recipes, sttqdm, save_img
 
 
-def get_all_buildings_urls(url, streamlit_display=False):
+def get_all_buildings_urls(url: str, streamlit_display: bool = False) -> pd.DataFrame:
+    """
+    Scrape all building URLs from the Satisfactory Wiki.
+
+    Parameters
+    ----------
+    url : str
+        The URL of the buildings page on the Satisfactory Wiki.
+    streamlit_display : bool, optional
+        Whether to display progress and messages using Streamlit, by default False.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame containing groups, subgroups, names, and URLs of buildings.
+
+    """
     if (streamlit_display):
         import streamlit as st
 
@@ -59,7 +76,25 @@ def get_all_buildings_urls(url, streamlit_display=False):
     return df
 
 
-def get_all_dfs_production(base_url, df_production_buildings, streamlit_display=False):
+def get_all_dfs_production(base_url: str, df_production_buildings: pd.DataFrame, streamlit_display: bool = False) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """
+    Scrape building information, recipes, and items for production buildings.
+
+    Parameters
+    ----------
+    base_url : str
+        The base URL of the Satisfactory Wiki.
+    df_production_buildings : pd.DataFrame
+        DataFrame containing URLs of production buildings.
+    streamlit_display : bool, optional
+        Whether to display progress and messages using Streamlit, by default False.
+
+    Returns
+    -------
+    Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
+        A tuple containing DataFrames for buildings, recipes, and items.
+
+    """
     if (streamlit_display):
         import streamlit as st
 
@@ -98,7 +133,29 @@ def get_all_dfs_production(base_url, df_production_buildings, streamlit_display=
     return buildings_df, recipes_df, items_df
 
 
-def save_imgs(df, col_url, path_imgs, title, streamlit_display=False):
+def save_imgs(df: pd.DataFrame, col_url: str, path_imgs: str, title: str, streamlit_display: bool = False) -> pd.DataFrame:
+    """
+    Save images of items or buildings to the specified path.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame containing the data for items or buildings.
+    col_url : str
+        The column containing the image URL.
+    path_imgs : str
+        The path where images should be saved.
+    title : str
+        The title for the scraping process (items or buildings).
+    streamlit_display : bool, optional
+        Flag to enable Streamlit display during the process, by default False.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with updated paths to the saved images.
+        
+    """
     if (streamlit_display):
         import streamlit as st
     

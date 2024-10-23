@@ -17,7 +17,19 @@ from gestion_satisfactory.web_pages import recipes_optimizer, factory_planner
 logger.add("logs/app.log", rotation="10 MB", level="INFO")
 
 
-def main():
+def main() -> None:
+    """
+    Main function to run the Streamlit application.
+
+    This function sets up the Streamlit page configuration, hides developer options
+    and footer, loads page configurations, and displays the navigation menu.
+    It then loads the selected page based on user interaction.
+
+    Returns
+    -------
+    None
+    
+    """
     st.set_page_config(
         page_title="Satisfactory - Gestion Project",
         page_icon=Image.open("conf/static/logo_gestion_satisfactory.png"),

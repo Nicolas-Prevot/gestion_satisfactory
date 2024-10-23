@@ -1,16 +1,16 @@
 import streamlit as st
 from st_aggrid import AgGrid, GridOptionsBuilder
-
 import pandas as pd
 import numpy as np
 import os
 from PIL import Image
+from typing import Tuple, Dict, Any
 
 from gestion_satisfactory.utils.database.load_df import get_df_from_tables
-from gestion_satisfactory.utils.display import display_results_item, display_recipes_frame
+from gestion_satisfactory.utils.display.display import display_results_item, display_recipes_frame
 from gestion_satisfactory.utils.database.connect_bdd import load_df, save_df, get_list_tables, delete_table
 from gestion_satisfactory.utils.database.update_bdd_from_web import update_bdd
-from gestion_satisfactory.utils.config import df_factory_planner_columns
+from gestion_satisfactory.utils.config.config import df_factory_planner_columns
 from gestion_satisfactory.utils.helpers.string_utils import (
     display_name_to_table_name,
     table_name_to_display_name
@@ -18,19 +18,32 @@ from gestion_satisfactory.utils.helpers.string_utils import (
 
 
 @st.cache_data
-def cached_get_df_from_tables():
+def cached_get_df_from_tables() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """
+    Cache and retrieve dataframes from tables.
+
+    Returns
+    -------
+    Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
+        A tuple containing dataframes for items, buildings, and recipes.
+
+    """
     return get_df_from_tables()
 
 
 def create_page(title: str) -> None:
     """
-    Create a streamlit page.
+    Create a Streamlit page for factory planning.
 
     Parameters
     ----------
-    title: str, optional
+    title : str
         The title of the page.
 
+    Returns
+    -------
+    None
+    
     """
     try:
         list_tables = get_list_tables()

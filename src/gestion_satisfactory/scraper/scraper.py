@@ -1,6 +1,24 @@
+from typing import Tuple
+import pandas as pd
+
 from gestion_satisfactory.scraper.urls import get_all_buildings_urls, get_all_dfs_production, save_imgs
 
-def create_dfs(streamlit_display=False):
+
+def create_dfs(streamlit_display: bool = False) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """
+    Create DataFrames for buildings, recipes, and items by scraping the Satisfactory Wiki.
+
+    Parameters
+    ----------
+    streamlit_display : bool, optional
+        Whether to display progress and messages using Streamlit, by default False.
+
+    Returns
+    -------
+    Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
+        A tuple of dataframes: (buildings_df, recipes_df, items_df)
+
+    """
     path_imgs = "static/"
 
     df_buildings_urls = get_all_buildings_urls("https://satisfactory.wiki.gg/wiki/Buildings", streamlit_display)

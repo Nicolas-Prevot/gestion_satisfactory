@@ -1,8 +1,24 @@
+from typing import Any
+import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode, GridUpdateMode
 from streamlit_agraph import agraph
 
 
-def item_selector(df_items):
+def item_selector(df_items: pd.DataFrame) -> Any:
+    """
+    Display a grid selector for items using AgGrid.
+
+    Parameters
+    ----------
+    df_items : pd.DataFrame
+        DataFrame containing item information with 'name' and 'web_img' columns.
+
+    Returns
+    -------
+    Any
+        The result from AgGrid containing selected rows and grid data.
+
+    """
     gb = GridOptionsBuilder.from_dataframe(df_items[["name", "web_img"]])
 
     thumbnail_renderer = JsCode("""
