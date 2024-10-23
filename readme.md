@@ -1,6 +1,63 @@
 # Gestion Satisfactory
 
-This project is a web application designed to help you manage and optimize production recipes in the game Satisfactory.
+Welcome to **Gestion Satisfactory**, a comprehensive tool designed to optimize your production workflows in the game Satisfactory.
+This application allows you to:
+
+- **Optimize** recipes based on your preferences and constraints on raw materials.
+- **Organize** your factories by area, factory, and production lines for better management and visibility.
+- **Analyze** resource production, ensuring you're producing the right amounts and identifying any overproduction or shortages.
+
+![Recipe Optimization Interface](assets/images/recipe_optim_recipes.png)
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="assets/images/recipe_optim_materials.png" alt="Items_balance"/>
+      <br>
+      <em>Balance of Items & Buildings needed</em>
+    </td>
+    <td align="center">
+      <img src="assets/images/recipe_optim_graph.png" alt="Image 2"/>
+      <br>
+      <em>Graph view of the optimal combination of recipes</em>
+    </td>
+  </tr>
+</table>
+
+## Features
+
+1. Recipe Optimization
+
+    - Utilize optimization algorithm to find the **most efficient combination of recipes** to produce an item of your choosing.
+    - Achieve **optimal resource utilization** and minimize waste.
+    - Customize your production by setting preferences and limits on raw materials.
+
+2. Factory Planning and Organization
+
+    - Structure your production setup by areas, factories, and production lines.
+    - Keep your operations clean and organized for easier management.
+    - Monitor the production output of each segment to balance your workflow.
+
+3. Resource Monitoring
+
+    - Gain visibility into all resources being produced.
+    - Identify overproduced items or shortages quickly.
+    - Make informed decisions to adjust your production accordingly.
+
+## Usage
+
+1. Optimizing Recipes:
+
+    - Navigate to the Recipe Optimizer section.
+    - Set your preferences and limits on raw materials.
+    - Select the items you wish to produce.
+    - The optimizer will generate the most efficient production plan based on your inputs.
+
+2. Planning Factories:
+
+    - Go to the Factory Planner section.
+    - Organize your production by creating areas, factories, and production lines.
+    - Assign recipes and monitor the output of each segment.
 
 ## Prerequisites
 
@@ -34,19 +91,7 @@ This project is a web application designed to help you manage and optimize produ
 
 3. Run the Webapp with/without Docker:
 
-    - Option 1: Webapp with Docker & postgres database with Docker
-
-        ```bash
-        docker compose -f docker-compose.yaml -f docker-compose.postgres.yaml up -d --build
-        ```
-
-    - Option 2: Webapp with Docker & sqlite database
-
-        ```bash
-        docker compose up -d --build
-        ```
-
-    - Option 3: Webapp & sqlite database without Docker
+    - Option 1: Webapp & sqlite database without Docker
 
         1. Start by instanciating your *Conda* environment by running the following command:
 
@@ -66,6 +111,18 @@ This project is a web application designed to help you manage and optimize produ
             ```bash
             poetry run app
             ```
+
+    - Option 2: Webapp with Docker & sqlite database
+
+        ```bash
+        docker compose up -d --build
+        ```
+
+    - Option 3: Webapp with Docker & postgres database with Docker
+
+        ```bash
+        docker compose -f docker-compose.yaml -f docker-compose.postgres.yaml up -d --build
+        ```
 
 4. Access the Application
 
