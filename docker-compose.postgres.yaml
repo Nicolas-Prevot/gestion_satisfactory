@@ -20,4 +20,3 @@ services:
       - postgres
     environment:
       POSTGRES_SUPPORT: true
-

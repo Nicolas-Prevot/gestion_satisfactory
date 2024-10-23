@@ -22,7 +22,7 @@ def get_connexion() -> Engine:
         A SQLAlchemy Engine connected to the database.
 
     """
-    postgres_support = os.environ.get('POSTGRES_SUPPORT', 'false').lower() == 'true'
+    postgres_support = os.environ.get("POSTGRES_SUPPORT", "false").lower() == "true"
     if postgres_support:
         logger.info("Creating a PostgreSQL connection...")
         # Chaîne de connexion à la base de données PostgreSQL
@@ -31,10 +31,10 @@ def get_connexion() -> Engine:
         engine = create_engine(db_url)
     else:
         logger.info("Creating a SQLite connection...")
-        db_path = os.path.join('data', 'sqlite', 'satisfactory.db')
+        db_path = os.path.join("data", "sqlite", "satisfactory.db")
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
         engine = create_engine(f"sqlite:///{db_path}")
-    
+
     with engine.connect() as conn:
         pass  # Connection successful
     logger.success("Connection to database established")
@@ -57,7 +57,7 @@ def load_df(name_table: str) -> pd.DataFrame:
 
     """
     conn = get_connexion()
-    query = f'SELECT * FROM {name_table}'
+    query = f"SELECT * FROM {name_table}"
     df = pd.read_sql(query, conn)
     return df
 
@@ -79,7 +79,7 @@ def save_df(name_table: str, table: pd.DataFrame) -> None:
 
     """
     conn = get_connexion()
-    table.to_sql(name_table, conn, if_exists='replace', index=False)
+    table.to_sql(name_table, conn, if_exists="replace", index=False)
 
 
 def get_list_tables() -> List[str]:
@@ -111,11 +111,10 @@ def delete_table(table_name: str) -> None:
     Returns
     -------
     None
-    
+
     """
     conn = get_connexion()
     metadata = MetaData()
     metadata.reflect(bind=conn)
     your_table = Table(table_name, metadata)
     your_table.drop(conn, checkfirst=True)
-    

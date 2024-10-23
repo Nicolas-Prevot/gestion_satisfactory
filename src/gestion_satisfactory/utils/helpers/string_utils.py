@@ -13,8 +13,8 @@ def display_name_to_table_name(display_name: str) -> str:
         The encoded table name prefixed with 'factory_planner_'.
 
     """
-    table_name = display_name.encode('utf-8').hex()
-    return f'factory_planner_{table_name}'
+    table_name = display_name.encode("utf-8").hex()
+    return f"factory_planner_{table_name}"
 
 
 def table_name_to_display_name(table_name: str) -> str:
@@ -32,6 +32,6 @@ def table_name_to_display_name(table_name: str) -> str:
         The decoded display name.
 
     """
-    display_name = table_name[len("factory_planner_"):]
-    display_name = bytes.fromhex(display_name).decode('utf-8')
+    display_name = table_name[len("factory_planner_") :]
+    display_name = bytes.fromhex(display_name).decode("utf-8")
     return display_name

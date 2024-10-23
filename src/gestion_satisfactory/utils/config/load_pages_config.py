@@ -129,13 +129,11 @@ def display_sidebar_header(display_links: bool = False) -> None:
     Returns
     -------
     None
-    
+
     """
     with st.sidebar:
         # Logo
-        st.image(
-            "conf/****.png", use_column_width=True
-        )
+        st.image("conf/****.png", use_column_width=True)
 
         # Nice to have links
         if display_links:

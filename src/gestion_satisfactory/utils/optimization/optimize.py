@@ -4,7 +4,14 @@ import numpy as np
 from pulp import LpProblem, LpMinimize, LpVariable, lpSum, LpStatus
 
 
-def get_optimize_prod( df_recipes: pd.DataFrame,raw_items: List[str],raw_weights: Dict[str, float],raw_limits: Dict[str, float],not_raw_items: List[str],selected_products: Dict[str, float]) -> Tuple[Dict[str, float], Dict[str, str], str]:
+def get_optimize_prod(
+    df_recipes: pd.DataFrame,
+    raw_items: List[str],
+    raw_weights: Dict[str, float],
+    raw_limits: Dict[str, float],
+    not_raw_items: List[str],
+    selected_products: Dict[str, float],
+) -> Tuple[Dict[str, float], Dict[str, str], str]:
     """
     Optimize the production of items based on recipes and constraints.
 
@@ -38,25 +45,25 @@ def get_optimize_prod( df_recipes: pd.DataFrame,raw_items: List[str],raw_weights
 
     """
     df_recipes = df_recipes.copy().reset_index(drop=True)
-    df_recipes['recipe'] = df_recipes.index
+    df_recipes["recipe"] = df_recipes.index
 
     # Prepare ingredients DataFrame
     ingredients_list = []
     for k in range(1, 5):
-        df = df_recipes[['recipe', 'duration', f'ingredient_{k}', f'ingredient_amount_{k}']].copy()
-        df.columns = ['recipe', 'duration', 'item', 'amount']
-        df = df.dropna(subset=['item'])
-        df['amount'] = - 60 * df['amount'] / df['duration']  # Negative since consumed; rate per minute
+        df = df_recipes[["recipe", "duration", f"ingredient_{k}", f"ingredient_amount_{k}"]].copy()
+        df.columns = ["recipe", "duration", "item", "amount"]
+        df = df.dropna(subset=["item"])
+        df["amount"] = -60 * df["amount"] / df["duration"]  # Negative since consumed; rate per minute
         ingredients_list.append(df)
     ingredients_long = pd.concat(ingredients_list, ignore_index=True)
 
     # Prepare products DataFrame
     products_list = []
     for k in range(1, 3):
-        df = df_recipes[['recipe', 'duration', f'product_{k}', f'product_amount_{k}']].copy()
-        df.columns = ['recipe', 'duration', 'item', 'amount']
-        df = df.dropna(subset=['item'])
-        df['amount'] = 60 * df['amount'] / df['duration']  # Positive since produced; rate per minute
+        df = df_recipes[["recipe", "duration", f"product_{k}", f"product_amount_{k}"]].copy()
+        df.columns = ["recipe", "duration", "item", "amount"]
+        df = df.dropna(subset=["item"])
+        df["amount"] = 60 * df["amount"] / df["duration"]  # Positive since produced; rate per minute
         products_list.append(df)
     products_long = pd.concat(products_list, ignore_index=True)
 
@@ -64,9 +71,9 @@ def get_optimize_prod( df_recipes: pd.DataFrame,raw_items: List[str],raw_weights
     transactions = pd.concat([ingredients_long, products_long], ignore_index=True)
 
     # Group by item and recipe to get net amounts
-    net_amounts = transactions.groupby(['item', 'recipe'])['amount'].sum().unstack(fill_value=0)
+    net_amounts = transactions.groupby(["item", "recipe"])["amount"].sum().unstack(fill_value=0)
 
-    recipes_idx = df_recipes['recipe'].tolist()
+    recipes_idx = df_recipes["recipe"].tolist()
     R_items = list(not_raw_items)
     Rp_items = list(raw_items)
 
@@ -76,10 +83,9 @@ def get_optimize_prod( df_recipes: pd.DataFrame,raw_items: List[str],raw_weights
     R = net_amounts.loc[R_items, recipes_idx].values if R_items else np.empty((0, len(recipes_idx)))
     Rp = net_amounts.loc[Rp_items, recipes_idx].values if Rp_items else np.empty((0, len(recipes_idx)))
 
-
     # Optimization Problem
     prob = LpProblem("combination_recipes", LpMinimize)
-    Lmbda = LpVariable.dicts("Recipe", recipes_idx, cat='Continuous', lowBound=0)
+    Lmbda = LpVariable.dicts("Recipe", recipes_idx, cat="Continuous", lowBound=0)
 
     # Objective
     weight_values = np.array([raw_weights.get(item, 0) for item in Rp_items])

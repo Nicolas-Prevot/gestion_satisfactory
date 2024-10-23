@@ -2,14 +2,8 @@ import streamlit as st
 from loguru import logger
 from streamlit_option_menu import option_menu
 from PIL import Image
-import sys
-import os
 
-from gestion_satisfactory.utils.config.load_pages_config import (
-    display_sidebar_header,
-    footer_streamlit_style,
-    load_pages_config,
-)
+from gestion_satisfactory.utils.config.load_pages_config import footer_streamlit_style, load_pages_config
 from gestion_satisfactory.web_pages import recipes_optimizer, factory_planner
 
 
@@ -28,7 +22,7 @@ def main() -> None:
     Returns
     -------
     None
-    
+
     """
     st.set_page_config(
         page_title="Satisfactory - Gestion Project",
@@ -37,9 +31,7 @@ def main() -> None:
         layout="wide",
     )
     # Hide developer options menu (right side) and footer
-    custom_style = footer_streamlit_style(
-        show_main_menu=True
-    )  # set to False to hide dev menu
+    custom_style = footer_streamlit_style(show_main_menu=True)  # set to False to hide dev menu
     st.markdown(custom_style, unsafe_allow_html=True)
 
     # Load page config from pages.toml
@@ -49,7 +41,7 @@ def main() -> None:
 
     with st.sidebar:
         # display_sidebar_header()
-        
+
         selected = option_menu(
             menu_title="Menu",  # required
             options=v_menu,  # required
@@ -65,8 +57,8 @@ def main() -> None:
                     # "font-size": "18px",
                     # "text-align": "left",
                     # "margin": "0px",
-                    "--hover-color": "#e8e8c2",
-                },
+                    "--hover-color": "#e8e8c2"
+                }
                 # "nav-link-selected": {"background-color": "#31F1CB"},
             },
         )
