@@ -26,7 +26,7 @@ def main() -> None:
     """
     st.set_page_config(
         page_title="Satisfactory - Gestion Project",
-        page_icon=Image.open("conf/static/logo_gestion_satisfactory.png"),
+        page_icon=Image.open("assets/images/logo_gestion_satisfactory.png"),
         initial_sidebar_state="expanded",
         layout="wide",
     )
