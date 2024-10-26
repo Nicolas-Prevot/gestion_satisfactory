@@ -10,6 +10,11 @@ services:
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
     command: -p $PORT_POSTGRES
+    healthcheck:
+      test: ["CMD", "pg_isready", "-p", "${PORT_POSTGRES:-5432}", "-U", "${USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
   app:
     build:
       context: .
@@ -17,6 +22,7 @@ services:
       args:
         POSTGRES_SUPPORT: true
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       POSTGRES_SUPPORT: true
