@@ -12,9 +12,9 @@ services:
     command: -p $PORT_POSTGRES
     healthcheck:
       test: ["CMD", "pg_isready", "-p", "${PORT_POSTGRES:-5432}", "-U", "${USER:-postgres}"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
-      retries: 3
+      retries: 7
   app:
     build:
       context: .

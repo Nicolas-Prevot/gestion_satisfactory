@@ -28,7 +28,7 @@ RUN poetry config virtualenvs.create false \
     fi
 
 COPY .streamlit .streamlit
-COPY conf conf
+COPY assets assets
 COPY src src
 
 ENV PYTHONPATH="/app/src:${PYTHONPATH}"

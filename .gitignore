@@ -152,5 +152,3 @@ data/
 logs/
 pg_data/
 static/
-
-!conf/static/
