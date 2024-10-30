@@ -1,0 +1,82 @@
+[tool.poetry]
+name = "gestion_satisfactory"
+version = "0.0.1"
+description = ""
+authors = [
+    "Nicolas Prevot <nicolasprevot57@gmail.com>"
+    ]
+readme = "README.md"
+packages = [{ include = "gestion_satisfactory", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+streamlit = "^1.38.0"
+loguru = "^0.7.2"
+streamlit-option-menu = "^0.3.13"
+streamlit-aggrid = "^1.0.5"
+streamlit-agraph = "^0.0.45"
+sqlalchemy = "^2.0.35"
+pulp = "^2.9.0"
+beautifulsoup4 = "^4.12.3"
+tqdm = "^4.66.5"
+omegaconf = "^2.3.0"
+python-dotenv = "^1.0.1"
+psycopg2-binary = { version = "^2.9.9", optional = true }
+toml = "^0.10.2"
+requests = "^2.32.3"
+
+[tool.poetry.extras]
+postgres = ["psycopg2-binary"]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+pytest-cov = "^5.0.0"
+pre-commit = "^4.0.0"
+mypy = "^1.11.2"
+ruff = "^0.6.9"
+vulture = "^2.13"
+types-toml = "^0.10.8.20240310"
+types-requests = "^2.32.0.20241016"
+
+[tool.poetry.scripts]
+app = "gestion_satisfactory.run_app:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+exclude = []                  # A list of file patterns to exclude from formatting and linting.
+extend-exclude = []           # In addition to the standard set of exclusions.
+fix = true
+line-length = 120
+output-format = "full"        # "full" | "concise" | "grouped" | "json" | "junit" | "github" | "gitlab" | "pylint" | "azure"
+show-fixes = true             # Enumerate all fixed violations.
+
+[tool.ruff.format]
+docstring-code-format = true  # Enable reformatting of code snippets in docstrings.
+exclude = []                  # In addition to the global exclude in tool.ruff
+indent-style = "space"
+line-ending = "auto"
+quote-style = "double"
+skip-magic-trailing-comma = true
+
+[tool.vulture]
+exclude = []                          # examples : ["*file*.py", "dir/"]
+ignore_decorators = []                # examples : ["@app.route", "@require_*"]
+ignore_names = []                     # examples : ["visit_*", "do_*"]
+make_whitelist = false                # set to true to generate a whitelist.py file
+min_confidence = 80                   # lower to 60 if you want more results
+paths = ["src/gestion_satisfactory"]  # examples : ["myscript.py", "mydir", "whitelist.py"]
+sort_by_size = true
+
+[tool.mypy]
+ignore_missing_imports = false  # Keep checking other imports
+
+[[tool.mypy.overrides]]
+module = "requests.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "toml.*"
+ignore_missing_imports = true
