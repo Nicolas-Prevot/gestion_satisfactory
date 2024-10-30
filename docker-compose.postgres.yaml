@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: satisfactory_postgres
+    restart: always
+    ports:
+      - "${PORT_POSTGRES:-5432}:${PORT_POSTGRES:-5432}"
+    env_file:
+      - .env
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    command: -p $PORT_POSTGRES
+    healthcheck:
+      test: ["CMD", "pg_isready", "-p", "${PORT_POSTGRES:-5432}", "-U", "${USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 7
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        POSTGRES_SUPPORT: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_SUPPORT: true

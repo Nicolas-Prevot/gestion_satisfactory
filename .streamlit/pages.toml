@@ -1,0 +1,9 @@
+[[pages]]
+path = "gestion_satisfactory/pages/recipes_optimizer.py"
+name = "Recipes Optimizer"
+icon = "bi bi-gear-wide-connected"
+
+[[pages]]
+path = "gestion_satisfactory/pages/factory_planner.py"
+name = "Factory Planner"
+icon = "bi bi-building"
