@@ -127,3 +127,11 @@ This application allows you to:
 4. Access the Application
 
    - Open your web browser and navigate to `http://localhost:<PORT_WEBAPP>` (the port you specified in the .env file).
+
+Note:
+
+If want to clean unused docker objects :
+
+```bash
+docker system prune -a --volumes
+```
