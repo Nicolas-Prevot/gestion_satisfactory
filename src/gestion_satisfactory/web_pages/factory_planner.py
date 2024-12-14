@@ -447,32 +447,30 @@ def create_page(title: str) -> None:
                                             "product_2",
                                             "product_amount_2",
                                         ]
-                                        col_building = ["power_usage"]
-                                        rows = []
-                                        for i, df_edited_row in df_edited.iterrows():
-                                            new_row = df_recipes[
-                                                df_recipes["recipe_name"] == df_edited_row["recipe_name"]
-                                            ][col_recipe].values.tolist()[0]
-                                            new_row += [
-                                                df_buildings[df_buildings["name"] == new_row[0]][
-                                                    ["power_usage"]
-                                                ].values.tolist()[0][0],
-                                                area_selected,
-                                                factory_selected,
-                                                line_selected,
-                                            ]
-                                            rows.append(new_row)
-                                        rows_array = np.array(rows)
+                                        missing_mask = df_edited.isnull().any(axis=1)
 
-                                        for i, name_col in enumerate(
-                                            col_recipe + col_building + ["area", "factory", "line"]
-                                        ):
-                                            df_edited[name_col] = rows_array[:, i]
+                                        if missing_mask.any():
+                                            missing_rows = df_edited[missing_mask]
+                                            for i, row in missing_rows.iterrows():
+                                                empty_columns = row[row.isnull()].index.tolist()
+                                                st.warning(f"Row {i} has empty columns: {empty_columns}")
 
-                                        df_factory_planner.drop(list(df_line.index), inplace=True)
+                                        df_valid = df_edited[~missing_mask].copy()
+                                        df_valid = df_valid.merge(df_recipes[['recipe_name'] + col_recipe], on='recipe_name', how='left')
+
+                                        df_valid = df_valid.merge(df_buildings[['name', 'power_usage']], left_on=col_recipe[0], right_on='name', how='left')
+
+                                        df_valid['area'] = area_selected
+                                        df_valid['factory'] = factory_selected
+                                        df_valid['line'] = line_selected
+
+                                        print(df_line)
+
+                                        df_factory_planner.drop(list(df_line.index)[1:], inplace=True)
                                         df_factory_planner = pd.concat(
-                                            [df_factory_planner, df_edited], ignore_index=True
+                                            [df_factory_planner, df_valid], ignore_index=True
                                         )
+                                        print(df_factory_planner)
                                         save_df(factory_planner_selected, df_factory_planner)
                                         st.rerun()
 
