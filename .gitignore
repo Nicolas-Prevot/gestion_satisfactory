@@ -151,4 +151,6 @@ satisfactory.db
 data/
 logs/
 pg_data/
-static/
+static/*
+
+!*.gitkeep
