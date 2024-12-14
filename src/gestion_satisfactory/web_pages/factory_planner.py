@@ -464,13 +464,10 @@ def create_page(title: str) -> None:
                                         df_valid['factory'] = factory_selected
                                         df_valid['line'] = line_selected
 
-                                        print(df_line)
-
                                         df_factory_planner.drop(list(df_line.index)[1:], inplace=True)
                                         df_factory_planner = pd.concat(
                                             [df_factory_planner, df_valid], ignore_index=True
                                         )
-                                        print(df_factory_planner)
                                         save_df(factory_planner_selected, df_factory_planner)
                                         st.rerun()
 
