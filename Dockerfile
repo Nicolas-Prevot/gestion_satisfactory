@@ -22,9 +22,9 @@ RUN apt-get update && apt-get install -y \
 RUN poetry config virtualenvs.create false \
     # Install with or without the 'postgres' extra based on POSTGRES_SUPPORT
     && if [ "$POSTGRES_SUPPORT" = "true" ] ; then \
-        poetry install --no-interaction --no-ansi --without dev --extras "postgres" ; \
+        poetry install --no-root --no-interaction --no-ansi --without dev --extras "postgres" ; \
     else \
-        poetry install --no-interaction --no-ansi --without dev ; \
+        poetry install --no-root --no-interaction --no-ansi --without dev ; \
     fi
 
 COPY .streamlit .streamlit

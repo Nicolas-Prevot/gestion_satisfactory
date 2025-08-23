@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 from typing import Tuple
+import re
 
 from gestion_satisfactory.scraper.utils import (
     parse_building_description,
@@ -121,7 +122,7 @@ def get_all_dfs_production(
         building_page = requests.get(base_url + row.url)
         building_soup = BeautifulSoup(building_page.content, "html.parser")
 
-        building_description = building_soup.find("aside")
+        building_description = building_soup.find("aside", class_=re.compile(r"portable-infobox"))
         info_building = parse_building_description(building_description)
         info_buildings[row.name] = info_building
 
