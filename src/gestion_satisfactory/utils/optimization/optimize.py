@@ -103,6 +103,7 @@ def get_optimize_prod(
     for i, item in enumerate(Rp_items):
         net_production = [Rp[i, idx - recipes_idx[0]] * Lmbda[idx] for idx in recipes_idx]
         prob += lpSum(net_production) >= -raw_limits[item]
+        prob += lpSum(net_production) <= 0
 
     # Solve the problem
     prob.solve()
