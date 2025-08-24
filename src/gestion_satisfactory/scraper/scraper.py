@@ -22,7 +22,7 @@ def create_dfs(streamlit_display: bool = False) -> Tuple[pd.DataFrame, pd.DataFr
     path_imgs = "static/"
 
     df_buildings_urls = get_all_buildings_urls("https://satisfactory.wiki.gg/wiki/Buildings", streamlit_display)
-    production_buildings = df_buildings_urls[df_buildings_urls["subgroup"].isin(["Smelters", "Manufacturers"])]
+    production_buildings = df_buildings_urls[df_buildings_urls["subgroup"].isin(["Smelters", "Manufacturers", "Generators"])]
 
     buildings_df, recipes_df, items_df = get_all_dfs_production(
         "https://satisfactory.wiki.gg", production_buildings, streamlit_display

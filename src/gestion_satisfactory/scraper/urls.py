@@ -127,8 +127,11 @@ def get_all_dfs_production(
         info_buildings[row.name] = info_building
 
         building_recipes = building_soup.find("table", class_="recipetable")
-        info_buidling_recipes = parse_building_recipes(building_recipes)
-        recipes_data[row.name] = info_buidling_recipes
+        try:
+            info_buidling_recipes = parse_building_recipes(building_recipes)
+            recipes_data[row.name] = info_buidling_recipes
+        except Exception as e:
+            st.warning(f"Error parsing recipes for '{row.name}': {e}")
 
         if streamlit_display:
             st.success(f"Informations on '{row.name}' are correctly parsed")

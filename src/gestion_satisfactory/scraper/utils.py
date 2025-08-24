@@ -276,6 +276,7 @@ def flatten_building_data(building_dict):
 def flatten_recipes(recipes_dict):
     items_list = []
     recipe_entries = []
+    seen_item_names = set()
     for building_name, recipes in recipes_dict.items():
         for idx, recipe in enumerate(recipes):
             flat_recipe = {
@@ -295,7 +296,9 @@ def flatten_recipes(recipes_dict):
                     ingredient_name = ingredient.get("name")
                     flat_recipe[f"ingredient_{i}"] = ingredient_name
                     flat_recipe[f"ingredient_amount_{i}"] = ingredient.get("amount")
-                    items_list.append({"name": ingredient_name, "url": ingredient.get("image_path")})
+                    if ingredient_name and ingredient_name not in seen_item_names:
+                        items_list.append({"name": ingredient_name, "url": ingredient.get("image_path")})
+                        seen_item_names.add(ingredient_name)
                 else:
                     flat_recipe[f"ingredient_{i}"] = None
                     flat_recipe[f"ingredient_amount_{i}"] = None
@@ -307,7 +310,9 @@ def flatten_recipes(recipes_dict):
                     product_name = product.get("name")
                     flat_recipe[f"product_{i}"] = product_name
                     flat_recipe[f"product_amount_{i}"] = product.get("amount")
-                    items_list.append({"name": product_name, "url": product.get("image_path")})
+                    if product_name and product_name not in seen_item_names:
+                        items_list.append({"name": product_name, "url": product.get("image_path")})
+                        seen_item_names.add(product_name)
                 else:
                     flat_recipe[f"product_{i}"] = None
                     flat_recipe[f"product_amount_{i}"] = None
