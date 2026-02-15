@@ -401,7 +401,8 @@ def create_page(title: str) -> None:
                                             default=1.0,
                                             min_value=0.00,
                                             max_value=2.5,
-                                            step=0.01,
+                                            step=0.000001,
+                                            format="%.6f",
                                         ),
                                         "nb_building": st.column_config.NumberColumn(
                                             label="Number",
