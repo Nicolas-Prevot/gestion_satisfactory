@@ -187,7 +187,14 @@ def create_page(title: str) -> None:
         if item_to_optim_prod["selected_rows"] is not None:
             for e in item_to_optim_prod["selected_rows"].itertuples():
                 items_to_produce.append(e.name)
-                quantities.append(st.slider(label=f"Desired number of {e.name} :", min_value=0, step=1, value=30))
+                quantities.append(st.number_input(
+                                    label=f"Desired number of {e.name} :",
+                                    step=1.000,
+                                    value=10.0,
+                                    format="%.3f",
+                                    min_value=0.001,
+                                    max_value=1000.0,
+                                ))
 
     weights_raw_items_dict = raw_materials_1 | {key: value * 1000 for key, value in raw_materials_2.items()}
     limits_raw_items_dict = raw_materials_limit_1 | raw_materials_limit_2
