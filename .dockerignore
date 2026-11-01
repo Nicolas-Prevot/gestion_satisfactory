@@ -1,0 +1,14 @@
+.git
+.gitignore
+.pytest_cache
+logs
+
+apps/backend/.venv
+apps/backend/.pytest_cache
+apps/backend/tests/*.sqlite3
+
+apps/frontend/node_modules
+apps/frontend/dist
+
+**/__pycache__
+**/*.pyc
