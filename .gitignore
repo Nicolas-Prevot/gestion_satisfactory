@@ -148,9 +148,19 @@ cython_debug/
 
 # Datasets and artifacts
 satisfactory.db
-data/
+data/*
 logs/
 pg_data/
 static/*
 
 !*.gitkeep
+
+# Monorepo app artifacts
+apps/backend/.venv/
+apps/backend/.pytest_cache/
+apps/backend/tests/*.sqlite3
+apps/frontend/node_modules/
+apps/frontend/dist/
+
+# Keep frontend source helpers tracked despite the Python lib/ ignore rule.
+!apps/frontend/src/lib/
